@@ -1,0 +1,6 @@
+rootProject.name = "RequestResponseBinder"
+include ':app'
+include ':rr-duty'
+include ':rr-core'
+include ':rr-timeout-android'
+include ':rr-timeout-java'
