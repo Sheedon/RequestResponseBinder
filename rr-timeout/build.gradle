@@ -2,10 +2,6 @@ plugins {
     id 'java-library'
 }
 
-dependencies{
-    api project(':rr-timeout')
-}
-
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8

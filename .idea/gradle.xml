@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/rr-core" />
             <option value="$PROJECT_DIR$/rr-dispatcher" />
+            <option value="$PROJECT_DIR$/rr-timeout" />
             <option value="$PROJECT_DIR$/rr-timeout-android" />
             <option value="$PROJECT_DIR$/rr-timeout-java" />
           </set>
