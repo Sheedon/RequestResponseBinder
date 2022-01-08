@@ -1,5 +1,7 @@
 package org.sheedon.rr.timeout;
 
+import java.util.concurrent.TimeoutException;
+
 /**
  * 超时监听者，反馈超时信息的ID
  *
@@ -14,6 +16,6 @@ public interface OnTimeOutListener<T> {
      *
      * @param id 超时消息ID
      */
-    void onTimeOut(T id);
+    void onTimeOut(T id, TimeoutException e);
 
 }

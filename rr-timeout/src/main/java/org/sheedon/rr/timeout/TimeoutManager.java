@@ -21,17 +21,17 @@ public abstract class TimeoutManager<T> {
      *
      * @param event 超时事件
      */
-    abstract void addEvent(DelayEvent<T> event);
+    public abstract void addEvent(DelayEvent<T> event);
 
     /**
      * 移除超时事件
      *
      * @param id 事件ID
      */
-    abstract void removeEvent(T id);
+    public abstract void removeEvent(T id);
 
     /**
      * 销毁
      */
-    abstract void destroy();
+    public abstract void destroy();
 }
