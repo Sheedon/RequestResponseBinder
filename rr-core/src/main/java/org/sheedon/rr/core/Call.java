@@ -38,5 +38,5 @@ public interface Call {
     /**
      * 是否被执行完成
      */
-    void isExecuted();
+    boolean isExecuted();
 }
