@@ -10,16 +10,18 @@ package org.sheedon.rr.core;
 public interface EventBehavior {
 
     /**
-     * 将⌚️提交到队列
+     * 将请求事件提交到队列
      *
-     * @param runnable Runnable
+     * @param requestRunnable 请求
+     * @return 是否已经被处理
      */
-    void pushEvent(Runnable runnable);
+    boolean enqueueRequestEvent(Runnable requestRunnable);
 
     /**
-     * 将事件移除队列
+     * 将反馈事件提交队列
      *
-     * @param runnable Runnable
+     * @param callbackRunnable Runnable
+     * @return 是否已经被处理
      */
-    void popEvent(Runnable runnable);
+    boolean enqueueCallbackEvent(Runnable callbackRunnable);
 }

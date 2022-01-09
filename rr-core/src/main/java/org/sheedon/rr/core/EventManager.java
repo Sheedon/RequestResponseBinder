@@ -18,7 +18,8 @@ public interface EventManager<Topic, T> {
      * @param callback 反馈监听器
      * @return DelayEvent<T>
      */
-    DelayEvent<T> push(Topic topic, Callback<?, ?> callback);
+    <Request extends BaseRequest<?, Topic>> DelayEvent<T> push(Request request,
+                                                           Callback<?, ?> callback);
 
     /**
      * 根据反馈主题获取反馈监听者
