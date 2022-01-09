@@ -6,6 +6,7 @@ import android.os.Message;
 
 import org.sheedon.rr.timeout.DelayEvent;
 import org.sheedon.rr.timeout.OnTimeOutListener;
+import org.sheedon.rr.timeout.ResourceBundleUtils;
 import org.sheedon.rr.timeout.TimeoutManager;
 
 import java.util.Locale;
@@ -22,6 +23,8 @@ import java.util.concurrent.TimeoutException;
 public class TimeOutHandler<T> extends TimeoutManager<T> {
 
     private static String TIMEOUT;
+    private static final String BASENAME = "timeout";
+    private static final String RESOURCE_KEY = "data_time_out";
 
     // 处理线程
     private final HandlerThread triggerThread;
@@ -34,7 +37,7 @@ public class TimeOutHandler<T> extends TimeoutManager<T> {
 
     public TimeOutHandler(String name, OnTimeOutListener<T> listener) {
         super(listener);
-        loadTimeOutDesc();
+        TIMEOUT = ResourceBundleUtils.getResourceString(BASENAME, RESOURCE_KEY);
 
         // 创建一个HandlerThread 用于执行消息Loop
         triggerThread = new HandlerThread(name);
@@ -49,15 +52,6 @@ public class TimeOutHandler<T> extends TimeoutManager<T> {
             }
             return false;
         });
-    }
-
-    /**
-     * 加载超时描述
-     */
-    private void loadTimeOutDesc() {
-        Locale locale = Locale.getDefault();
-        ResourceBundle my = ResourceBundle.getBundle("string", locale);
-        TIMEOUT = my.getString("data_time_out");
     }
 
 
