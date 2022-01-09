@@ -7,21 +7,32 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:01 下午
  */
-public interface DispatchManager {
+public interface DispatchManager<BackTopic> {
 
     /**
      * 将请求行为入队，按预定策略去执行请求动作
      *
-     * @param binder 请求响应绑定者
+     * @param runnable 处理事件
      */
-    void enqueueRequest(Binder binder);
+    void enqueueRequest(Runnable runnable);
+
+    /**
+     * 添加一个请求响应关联者，用于绑定一个请求与一个响应
+     *
+     * @param request  请求数据
+     * @param callback 反馈监听器
+     */
+    <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<?, ?>>
+    void addBinder(Request request, RRCallback callback);
 
     /**
      * 添加一个可观察信息，用于订阅某个主题的反馈信息
      *
-     * @param binder 请求响应绑定者
+     * @param request  请求数据
+     * @param callback 反馈监听器
      */
-    void addObservable(Binder binder);
+    <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<?, ?>>
+    void addObservable(Request request, RRCallback callback);
 
 
     /**
