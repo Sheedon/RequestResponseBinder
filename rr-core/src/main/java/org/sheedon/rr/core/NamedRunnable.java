@@ -13,7 +13,7 @@ public abstract class NamedRunnable implements Runnable {
 
     private final String name;
 
-    NamedRunnable(String format, Object... args) {
+    protected NamedRunnable(String format, Object... args) {
         this.name = String.format(Locale.US, format, args);
     }
 
