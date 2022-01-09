@@ -14,12 +14,13 @@ public interface EventManager<Topic, T> {
     /**
      * 将反馈主题和反馈监听器添加到事件中，并且返回延迟事件，用于处理超时任务
      *
-     * @param topic    反馈主题
-     * @param callback 反馈监听器
+     * @param request   请求对象
+     * @param callback  反馈监听器
+     * @param <Request> 请求对象类型
      * @return DelayEvent<T>
      */
     <Request extends BaseRequest<?, Topic>> DelayEvent<T> push(Request request,
-                                                           Callback<?, ?> callback);
+                                                               Callback<?, ?> callback);
 
     /**
      * 根据反馈主题获取反馈监听者
@@ -43,7 +44,7 @@ public interface EventManager<Topic, T> {
      * @param topic    主题
      * @param callback 反馈监听者
      */
-    void subscribe(Topic topic, Callback<?, ?> callback);
+    boolean subscribe(Topic topic, Callback<?, ?> callback);
 
     /**
      * 通过反馈绑定主题 加载 反馈监听者

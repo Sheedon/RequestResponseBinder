@@ -97,8 +97,9 @@ public class DefaultEventManager<BackTopic> implements EventManager<BackTopic, S
     }
 
     @Override
-    public void subscribe(BackTopic backTopic, Callback<?, ?> callback) {
+    public boolean subscribe(BackTopic backTopic, Callback<?, ?> callback) {
         callbackPool.put(backTopic, callback);
+        return true;
     }
 
     @Override
