@@ -11,7 +11,6 @@ import org.sheedon.rr.core.RequestAdapter;
 import org.sheedon.rr.timeout.DelayEvent;
 import org.sheedon.rr.timeout.TimeoutManager;
 
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -21,16 +20,26 @@ import java.util.List;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 9:36 下午
  */
-public class Dispatcher<BackTopic, ID> implements DispatchManager<BackTopic> {
+public class Dispatcher<BackTopic, ID> implements DispatchManager<BackTopic,ID> {
 
     // 事件行为服务，将任务放入服务中去执行
-    private List<EventBehavior> behaviorServices = new LinkedList<>();
+    private final List<EventBehavior> behaviorServices;
     // 事件池
-    private List<EventManager<BackTopic, ID>> eventManagerPool = new LinkedList<>();
+    private final List<EventManager<BackTopic, ID>> eventManagerPool;
     // 超时处理者
-    private TimeoutManager<ID> timeoutManager;
+    private final TimeoutManager<ID> timeoutManager;
     // 请求适配器
-    private RequestAdapter<?> requestAdapter;
+    private final RequestAdapter<?> requestAdapter;
+
+    public Dispatcher(List<EventBehavior> behaviorServices,
+                      List<EventManager<BackTopic, ID>> eventManagerPool,
+                      TimeoutManager<ID> timeoutManager,
+                      RequestAdapter<?> requestAdapter) {
+        this.behaviorServices = behaviorServices;
+        this.eventManagerPool = eventManagerPool;
+        this.timeoutManager = timeoutManager;
+        this.requestAdapter = requestAdapter;
+    }
 
     @SuppressWarnings("unchecked")
     @Override

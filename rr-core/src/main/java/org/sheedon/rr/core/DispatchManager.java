@@ -7,7 +7,7 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:01 下午
  */
-public interface DispatchManager<BackTopic> {
+public interface DispatchManager<BackTopic,ID> {
 
     <Data> RequestAdapter<Data> requestAdapter();
 
