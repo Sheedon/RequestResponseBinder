@@ -10,9 +10,14 @@ package org.sheedon.rr.core;
 public class BaseResponse<Result, T> {
 
     // 反馈绑定主题
-    private final T backTopic;
+    private T backTopic;
+    // 错误描述
+    private String message;
     // 请求数据
-    private final Result body;
+    private Result body;
+
+    private BaseResponse() {
+    }
 
     protected <ResponseBuilder extends BaseResponseBuilder<Result, T>> BaseResponse(ResponseBuilder builder) {
         this.backTopic = builder.getBackTopic();
@@ -25,5 +30,12 @@ public class BaseResponse<Result, T> {
 
     public Result getBody() {
         return body;
+    }
+
+    public static <T> BaseResponse<?, T> build(T backTopic, String message) {
+        BaseResponse<?, T> response = new BaseResponse<>();
+        response.backTopic = backTopic;
+        response.message = message;
+        return response;
     }
 }
