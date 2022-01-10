@@ -2,11 +2,11 @@ package org.sheedon.rr.dispatcher;
 
 import org.sheedon.rr.core.BaseRequest;
 import org.sheedon.rr.core.BaseResponse;
-import org.sheedon.rr.core.Call;
 import org.sheedon.rr.core.Callback;
 import org.sheedon.rr.core.DispatchManager;
 import org.sheedon.rr.core.EventBehavior;
 import org.sheedon.rr.core.EventManager;
+import org.sheedon.rr.core.ReadyTask;
 import org.sheedon.rr.core.RequestAdapter;
 import org.sheedon.rr.timeout.DelayEvent;
 import org.sheedon.rr.timeout.TimeoutManager;
@@ -32,6 +32,12 @@ public class Dispatcher<BackTopic, ID> implements DispatchManager<BackTopic> {
     // 请求适配器
     private RequestAdapter<?> requestAdapter;
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public RequestAdapter<?> requestAdapter() {
+        return requestAdapter;
+    }
+
     @Override
     public void enqueueRequest(Runnable runnable) {
         for (EventBehavior service : behaviorServices) {
@@ -42,19 +48,19 @@ public class Dispatcher<BackTopic, ID> implements DispatchManager<BackTopic> {
     }
 
     @Override
-    public <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<?, ?>>
+    public <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<Request, ?>>
     void addBinder(Request request, RRCallback callback) {
         for (EventManager<BackTopic, ID> manager : eventManagerPool) {
             DelayEvent<ID> event = manager.push(request, callback);
-            if (event == null) {
-                continue;
+            if (event != null) {
+                timeoutManager.addEvent(event);
+                return;
             }
-            timeoutManager.addEvent(event);
         }
     }
 
     @Override
-    public <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<?, ?>>
+    public <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<Request, ?>>
     void addObservable(Request request, RRCallback callback) {
         for (EventManager<BackTopic, ID> manager : eventManagerPool) {
             boolean subscribed = manager.subscribe(request.getBackTopic(), callback);
@@ -74,8 +80,21 @@ public class Dispatcher<BackTopic, ID> implements DispatchManager<BackTopic> {
     }
 
     @Override
-    public <Response extends BaseResponse<?, ?>> void onResponse(Response response) {
-
+    public <Request extends BaseRequest<?, BackTopic>, Response extends BaseResponse<?, BackTopic>>
+    void onResponse(Response response) {
+        BackTopic backTopic = response.getBackTopic();
+        for (EventManager<BackTopic, ID> manager : eventManagerPool) {
+            ReadyTask<ID, ?> task = manager.popByTopic(backTopic);
+            if (task != null) {
+                timeoutManager.removeEvent(task.getId());
+                //noinspection unchecked
+                Request request = (Request) task.getRequest();
+                //noinspection unchecked
+                Callback<Request, Response> callback = (Callback<Request, Response>) task.getCallback();
+                callback.onResponse(request, response);
+                return;
+            }
+        }
     }
 
 
