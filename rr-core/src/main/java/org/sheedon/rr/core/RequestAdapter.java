@@ -22,6 +22,6 @@ public interface RequestAdapter<Data> {
      *
      * @param data 请求数据
      */
-    void publish(Data data);
+    boolean publish(Data data);
 
 }

@@ -9,6 +9,8 @@ package org.sheedon.rr.core;
  */
 public interface DispatchManager<BackTopic> {
 
+    <Data> RequestAdapter<Data> requestAdapter();
+
     /**
      * 将请求行为入队，按预定策略去执行请求动作
      *
@@ -22,7 +24,7 @@ public interface DispatchManager<BackTopic> {
      * @param request  请求数据
      * @param callback 反馈监听器
      */
-    <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<?, ?>>
+    <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<Request, ?>>
     void addBinder(Request request, RRCallback callback);
 
     /**
@@ -31,7 +33,7 @@ public interface DispatchManager<BackTopic> {
      * @param request  请求数据
      * @param callback 反馈监听器
      */
-    <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<?, ?>>
+    <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<Request, ?>>
     void addObservable(Request request, RRCallback callback);
 
 
@@ -49,7 +51,9 @@ public interface DispatchManager<BackTopic> {
      * @param response   反馈结果
      * @param <Response> 反馈结果
      */
-    <Response extends BaseResponse<?, ?>> void onResponse(Response response);
+    <Request extends BaseRequest<?, BackTopic>,
+            Response extends BaseResponse<?, BackTopic>>
+    void onResponse(Response response);
 
 
 }
