@@ -17,7 +17,7 @@ public interface Call {
      * @param <Response> 反馈数据
      */
     <Request extends BaseRequest<?, ?>,
-            Response extends BaseResponse<?, ?>>
+            Response extends BaseResponse<Request, ?>>
     void enqueue(Callback<Request, Response> callback);
 
     /**

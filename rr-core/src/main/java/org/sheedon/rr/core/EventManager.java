@@ -20,7 +20,7 @@ public interface EventManager<Topic, T> {
      * @return DelayEvent<T>
      */
     <Request extends BaseRequest<?, Topic>> DelayEvent<T> push(Request request,
-                                                               Callback<?, ?> callback);
+                                                               Callback<Request, ?> callback);
 
     /**
      * 根据反馈主题获取反馈监听者
@@ -28,7 +28,7 @@ public interface EventManager<Topic, T> {
      * @param topic 反馈主题
      * @return Callback<?, ?>
      */
-    Callback<?, ?> popByTopic(Topic topic);
+    <Request extends BaseRequest<?, Topic>> ReadyTask<T, Request> popByTopic(Topic topic);
 
     /**
      * 根据请求ID获取反馈监听者
@@ -36,7 +36,8 @@ public interface EventManager<Topic, T> {
      * @param id 请求ID
      * @return Callback<?, ?>
      */
-    Callback<?, ?> popById(T id);
+    <Request extends BaseRequest<?, Topic>>
+    ReadyTask<T, Request> popById(T id);
 
     /**
      * 通过主题和反馈监听者，实现监听内容的绑定
