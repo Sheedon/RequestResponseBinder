@@ -7,17 +7,15 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 4:29 下午
  */
-public interface Observable {
+public interface Observable<Topic, Request extends BaseRequest<?, Topic>> {
 
     /**
      * 订阅，指代于需要将请求和反馈绑定的任务
      *
      * @param callback   反馈内容
-     * @param <Request>  请求数据
      * @param <Response> 反馈数据
      */
-    <Request extends BaseRequest<?, ?>,
-            Response extends BaseResponse<?, ?>>
+    <Response extends BaseResponse<?, Topic>>
     void subscribe(Callback<Request, Response> callback);
 
 

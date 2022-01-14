@@ -1,8 +1,11 @@
 package org.sheedon.rr.dispatcher;
 
+import org.sheedon.rr.core.BaseRequest;
+import org.sheedon.rr.core.Call;
 import org.sheedon.rr.core.DispatchManager;
 import org.sheedon.rr.core.EventBehavior;
 import org.sheedon.rr.core.EventManager;
+import org.sheedon.rr.core.Observable;
 import org.sheedon.rr.core.RequestAdapter;
 import org.sheedon.rr.timeout.TimeoutManager;
 
@@ -17,7 +20,7 @@ import java.util.Objects;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/9 10:35 上午
  */
-public class AbstractClient<BackTopic, ID> {
+public abstract class AbstractClient<BackTopic, ID> {
 
     private final DispatchManager<BackTopic, ID> dispatcher;
     private final int timeout;
@@ -35,7 +38,17 @@ public class AbstractClient<BackTopic, ID> {
         return timeout;
     }
 
-    public static abstract class Builder<BackTopic, ID> {
+    <Data, Request extends BaseRequest<Data, BackTopic>> Call newCall(Request request) {
+        return RealCall.newRealCall(this, request);
+    }
+
+
+    <Data, Request extends BaseRequest<Data, BackTopic>> Observable<BackTopic, Request>
+    newObservable(Request request) {
+        return RealObservable.newRealObservable(this, request);
+    }
+
+    protected static abstract class Builder<BackTopic, ID> {
         protected DispatchManager<BackTopic, ID> dispatcher;
         protected int timeout;
         // 职责服务执行环境
@@ -146,16 +159,16 @@ public class AbstractClient<BackTopic, ID> {
 
 
         public <Client extends AbstractClient<BackTopic, ID>> Client build() {
-            if(behaviorServices.isEmpty()){
+            if (behaviorServices.isEmpty()) {
                 behaviorServices.add(new DefaultEventBehaviorService());
             }
-            if(eventManagerPool.isEmpty()){
+            if (eventManagerPool.isEmpty()) {
                 throw new NullPointerException("please eventManager(new DefaultEventManager())");
             }
-            if(timeoutManager == null){
+            if (timeoutManager == null) {
                 throw new NullPointerException("please add timeoutManager()");
             }
-            if(requestAdapter == null){
+            if (requestAdapter == null) {
                 throw new NullPointerException("please add requestAdapter()");
             }
             if (dispatcher == null) {
