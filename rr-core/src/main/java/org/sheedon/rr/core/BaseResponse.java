@@ -7,33 +7,33 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:50 下午
  */
-public class BaseResponse<Result, T> {
+public class BaseResponse<BackTopic, Data> {
 
     // 反馈绑定主题
-    private T backTopic;
+    private BackTopic backTopic;
     // 错误描述
     private String message;
     // 请求数据
-    private Result body;
+    private Data body;
 
     private BaseResponse() {
     }
 
-    protected <ResponseBuilder extends BaseResponseBuilder<Result, T>> BaseResponse(ResponseBuilder builder) {
+    protected <ResponseBuilder extends BaseResponseBuilder<BackTopic, Data>> BaseResponse(ResponseBuilder builder) {
         this.backTopic = builder.getBackTopic();
         this.body = builder.getBody();
     }
 
-    public T getBackTopic() {
+    public BackTopic getBackTopic() {
         return backTopic;
     }
 
-    public Result getBody() {
+    public Data getBody() {
         return body;
     }
 
-    public static <T> BaseResponse<?, T> build(T backTopic, String message) {
-        BaseResponse<?, T> response = new BaseResponse<>();
+    public static <BackTopic, Data> BaseResponse<BackTopic, Data> build(BackTopic backTopic, String message) {
+        BaseResponse<BackTopic, Data> response = new BaseResponse<>();
         response.backTopic = backTopic;
         response.message = message;
         return response;

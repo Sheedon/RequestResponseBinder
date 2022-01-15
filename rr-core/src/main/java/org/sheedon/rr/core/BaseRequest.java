@@ -12,22 +12,23 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:06 下午
  */
-public class BaseRequest<Data, T> {
+public class BaseRequest<BackTopic, Data> {
 
     // 反馈绑定主题
-    private final T backTopic;
+    private final BackTopic backTopic;
     // 延迟毫秒
     private final long delayMilliSecond;
     // 请求数据
     private final Data body;
 
-    protected <RequestBuilder extends BaseRequestBuilder<Data, T>> BaseRequest(RequestBuilder builder) {
+    protected <RequestBuilder extends BaseRequestBuilder<BackTopic, Data>>
+    BaseRequest(RequestBuilder builder) {
         this.backTopic = builder.getBackTopic();
         this.delayMilliSecond = builder.getDelayMilliSecond();
         this.body = builder.getBody();
     }
 
-    public T getBackTopic() {
+    public BackTopic getBackTopic() {
         return backTopic;
     }
 

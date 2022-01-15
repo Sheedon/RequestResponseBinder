@@ -10,18 +10,18 @@ import java.util.Objects;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:54 下午
  */
-public abstract class BaseResponseBuilder<Result, T> {
+public abstract class BaseResponseBuilder<BackTopic, Data> {
 
     // 反馈绑定主题
-    private T backTopic;
+    private BackTopic backTopic;
     // 请求数据
-    private Result body;
+    private Data body;
 
-    public T getBackTopic() {
+    public BackTopic getBackTopic() {
         return backTopic;
     }
 
-    public Result getBody() {
+    public Data getBody() {
         return body;
     }
 
@@ -29,7 +29,7 @@ public abstract class BaseResponseBuilder<Result, T> {
 
     }
 
-    public <Response extends BaseResponse<Result, T>> BaseResponseBuilder(Response request) {
+    public <Response extends BaseResponse<BackTopic, Data>> BaseResponseBuilder(Response request) {
         this.backTopic = request.getBackTopic();
         this.body = request.getBody();
     }
@@ -40,7 +40,7 @@ public abstract class BaseResponseBuilder<Result, T> {
      * @param backTopic 反馈名
      * @return Builder
      */
-    public BaseResponseBuilder<Result, T> backTopic(T backTopic) {
+    public BaseResponseBuilder<BackTopic, Data> backTopic(BackTopic backTopic) {
         if (requireBackTopicNull(backTopic))
             return this;
 
@@ -54,7 +54,7 @@ public abstract class BaseResponseBuilder<Result, T> {
      * @param backTopic 反馈绑定主题
      * @return 是否为空
      */
-    protected abstract boolean requireBackTopicNull(T backTopic);
+    protected abstract boolean requireBackTopicNull(BackTopic backTopic);
 
     /**
      * 设置反馈消息
@@ -62,14 +62,14 @@ public abstract class BaseResponseBuilder<Result, T> {
      * @param body 消息内容
      * @return Builder
      */
-    public BaseResponseBuilder<Result, T> body(Result body) {
+    public BaseResponseBuilder<BackTopic, Data> body(Data body) {
         this.body = Objects.requireNonNull(body, "responseBody == null");
         return this;
     }
 
 
     @SuppressWarnings("unchecked")
-    public <Response extends BaseResponse<Result, T>> Response build() {
+    public <Response extends BaseResponse<BackTopic, Data>> Response build() {
         return (Response) new BaseResponse<>(this);
     }
 

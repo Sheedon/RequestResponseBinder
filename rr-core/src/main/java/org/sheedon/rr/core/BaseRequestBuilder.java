@@ -10,16 +10,16 @@ import java.util.Objects;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:16 下午
  */
-public abstract class BaseRequestBuilder<Data, T> {
+public abstract class BaseRequestBuilder<BackTopic, Data> {
 
     // 反馈绑定主题
-    private T backTopic;
+    private BackTopic backTopic;
     // 延迟毫秒
     private long delayMilliSecond = -1;
     // 请求数据
     private Data body;
 
-    public T getBackTopic() {
+    public BackTopic getBackTopic() {
         return backTopic;
     }
 
@@ -35,7 +35,7 @@ public abstract class BaseRequestBuilder<Data, T> {
 
     }
 
-    public <Request extends BaseRequest<Data, T>> BaseRequestBuilder(Request request) {
+    public <Request extends BaseRequest<BackTopic, Data>> BaseRequestBuilder(Request request) {
         this.backTopic = request.getBackTopic();
         this.delayMilliSecond = request.getDelayMilliSecond();
         this.body = request.getBody();
@@ -47,7 +47,7 @@ public abstract class BaseRequestBuilder<Data, T> {
      * @param backTopic 反馈名
      * @return Builder
      */
-    public BaseRequestBuilder<Data, T> backTopic(T backTopic) {
+    public BaseRequestBuilder<BackTopic, Data> backTopic(BackTopic backTopic) {
         if (requireBackTopicNull(backTopic))
             return this;
 
@@ -61,7 +61,7 @@ public abstract class BaseRequestBuilder<Data, T> {
      * @param backTopic 反馈绑定主题
      * @return 是否为空
      */
-    protected abstract boolean requireBackTopicNull(T backTopic);
+    protected abstract boolean requireBackTopicNull(BackTopic backTopic);
 
     /**
      * 单次请求超时额外设置
@@ -69,7 +69,7 @@ public abstract class BaseRequestBuilder<Data, T> {
      * @param delayMilliSecond 延迟时间（毫秒）
      * @return Builder
      */
-    public BaseRequestBuilder<Data, T> delayMilliSecond(int delayMilliSecond) {
+    public BaseRequestBuilder<BackTopic, Data> delayMilliSecond(int delayMilliSecond) {
         this.delayMilliSecond = delayMilliSecond;
         return this;
     }
@@ -80,7 +80,7 @@ public abstract class BaseRequestBuilder<Data, T> {
      * @param delaySecond 延迟时间（秒）
      * @return Builder
      */
-    public BaseRequestBuilder<Data, T> delaySecond(long delaySecond) {
+    public BaseRequestBuilder<BackTopic, Data> delaySecond(long delaySecond) {
         this.delayMilliSecond = delaySecond * 1000;
         return this;
     }
@@ -91,14 +91,14 @@ public abstract class BaseRequestBuilder<Data, T> {
      * @param body 消息内容
      * @return Builder
      */
-    public BaseRequestBuilder<Data, T> body(Data body) {
+    public BaseRequestBuilder<BackTopic, Data> body(Data body) {
         this.body = Objects.requireNonNull(body, "requestBody == null");
         return this;
     }
 
 
     @SuppressWarnings("unchecked")
-    public <Request extends BaseRequest<Data, T>> Request build() {
+    public <Request extends BaseRequest<BackTopic, Data>> Request build() {
         return (Request) new BaseRequest<>(this);
     }
 
