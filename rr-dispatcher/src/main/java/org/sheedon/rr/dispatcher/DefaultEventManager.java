@@ -1,8 +1,7 @@
 package org.sheedon.rr.dispatcher;
 
-import com.sun.istack.internal.NotNull;
-
 import org.sheedon.rr.core.BaseRequest;
+import org.sheedon.rr.core.BaseResponse;
 import org.sheedon.rr.core.Callback;
 import org.sheedon.rr.core.EventManager;
 import org.sheedon.rr.core.ReadyTask;
@@ -22,18 +21,21 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/9 2:45 下午
  */
-public class DefaultEventManager<BackTopic> implements EventManager<BackTopic, String> {
+public class DefaultEventManager<BackTopic,
+        RequestData, Request extends BaseRequest<BackTopic, RequestData>,
+        ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
+        implements EventManager<BackTopic, String, RequestData, Request, ResponseData, Response> {
 
     // 以请求ID为键，以请求任务为值的请求数据池
-    private final Map<String, ReadyTask<String, ? extends BaseRequest<?, BackTopic>>> readyPool
+    private final Map<String, ReadyTask<BackTopic, String, RequestData, Request, ResponseData, Response>> readyPool
             = new ConcurrentHashMap<>();
     // 主题队列池，反馈主题为键，同样的反馈主题的内容，依次存入有序队列中
     private final Map<BackTopic, Deque<String>> topicDequePool = new LinkedHashMap<>();
     // 监听反馈池
-    private final Map<BackTopic, Callback<?, ?>> callbackPool = new ConcurrentHashMap<>();
+    private final Map<BackTopic, Callback<BackTopic, RequestData, Request, ResponseData, Response>> callbackPool = new ConcurrentHashMap<>();
 
     @Override
-    public <Request extends BaseRequest<?, BackTopic>> DelayEvent<String> push(@NotNull Request request, Callback<Request, ?> callback) {
+    public DelayEvent<String> push(Request request, Callback<BackTopic, RequestData, Request, ResponseData, Response> callback) {
         if (request == null) {
             throw new NullPointerException("request is null");
         }
@@ -72,8 +74,7 @@ public class DefaultEventManager<BackTopic> implements EventManager<BackTopic, S
      * @return Callback<?, ?>
      */
     @Override
-    public <Request extends BaseRequest<?, BackTopic>>
-    ReadyTask<String, Request> popByTopic(BackTopic backTopic) {
+    public ReadyTask<BackTopic, String, RequestData, Request, ResponseData, Response> popByTopic(BackTopic backTopic) {
         synchronized (topicDequePool) {
             Deque<String> deque = topicDequePool.get(backTopic);
             if (deque == null || deque.size() == 0)
@@ -91,20 +92,18 @@ public class DefaultEventManager<BackTopic> implements EventManager<BackTopic, S
      * @return Callback
      */
     @Override
-    public <Request extends BaseRequest<?, BackTopic>>
-    ReadyTask<String, Request> popById(String id) {
-        //noinspection unchecked
-        return (ReadyTask<String, Request>) readyPool.remove(id);
+    public ReadyTask<BackTopic, String, RequestData, Request, ResponseData, Response> popById(String id) {
+        return readyPool.remove(id);
     }
 
     @Override
-    public boolean subscribe(BackTopic backTopic, Callback<?, ?> callback) {
+    public boolean subscribe(BackTopic backTopic, Callback<BackTopic, RequestData, Request, ResponseData, Response> callback) {
         callbackPool.put(backTopic, callback);
         return true;
     }
 
     @Override
-    public Callback<?, ?> loadObservable(BackTopic backTopic) {
+    public Callback<BackTopic, RequestData, Request, ResponseData, Response> loadObservable(BackTopic backTopic) {
         return callbackPool.get(backTopic);
     }
 }

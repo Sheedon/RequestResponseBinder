@@ -20,30 +20,33 @@ import java.util.List;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 9:36 下午
  */
-public class Dispatcher<BackTopic, ID> implements DispatchManager<BackTopic,ID> {
+public class Dispatcher<BackTopic, ID,
+        RequestData, Request extends BaseRequest<BackTopic, RequestData>,
+        ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
+        implements DispatchManager<BackTopic, ID, RequestData, Request, ResponseData, Response> {
+
 
     // 事件行为服务，将任务放入服务中去执行
     private final List<EventBehavior> behaviorServices;
     // 事件池
-    private final List<EventManager<BackTopic, ID>> eventManagerPool;
+    private final List<EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response>> eventManagerPool;
     // 超时处理者
     private final TimeoutManager<ID> timeoutManager;
     // 请求适配器
-    private final RequestAdapter<?> requestAdapter;
+    private final RequestAdapter<RequestData> requestAdapter;
 
     public Dispatcher(List<EventBehavior> behaviorServices,
-                      List<EventManager<BackTopic, ID>> eventManagerPool,
+                      List<EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response>> eventManagerPool,
                       TimeoutManager<ID> timeoutManager,
-                      RequestAdapter<?> requestAdapter) {
+                      RequestAdapter<RequestData> requestAdapter) {
         this.behaviorServices = behaviorServices;
         this.eventManagerPool = eventManagerPool;
         this.timeoutManager = timeoutManager;
         this.requestAdapter = requestAdapter;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public RequestAdapter<?> requestAdapter() {
+    public RequestAdapter<RequestData> requestAdapter() {
         return requestAdapter;
     }
 
@@ -57,9 +60,9 @@ public class Dispatcher<BackTopic, ID> implements DispatchManager<BackTopic,ID> 
     }
 
     @Override
-    public <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<Request, ?>>
+    public <RRCallback extends Callback<BackTopic, RequestData, Request, ResponseData, Response>>
     void addBinder(Request request, RRCallback callback) {
-        for (EventManager<BackTopic, ID> manager : eventManagerPool) {
+        for (EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response> manager : eventManagerPool) {
             DelayEvent<ID> event = manager.push(request, callback);
             if (event != null) {
                 timeoutManager.addEvent(event);
@@ -69,9 +72,9 @@ public class Dispatcher<BackTopic, ID> implements DispatchManager<BackTopic,ID> 
     }
 
     @Override
-    public <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<Request, ?>>
+    public <RRCallback extends Callback<BackTopic, RequestData, Request, ResponseData, Response>>
     void addObservable(Request request, RRCallback callback) {
-        for (EventManager<BackTopic, ID> manager : eventManagerPool) {
+        for (EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response> manager : eventManagerPool) {
             boolean subscribed = manager.subscribe(request.getBackTopic(), callback);
             if (subscribed) {
                 return;
@@ -89,17 +92,14 @@ public class Dispatcher<BackTopic, ID> implements DispatchManager<BackTopic,ID> 
     }
 
     @Override
-    public <Request extends BaseRequest<?, BackTopic>, Response extends BaseResponse<?, BackTopic>>
-    void onResponse(Response response) {
+    public void onResponse(Response response) {
         BackTopic backTopic = response.getBackTopic();
-        for (EventManager<BackTopic, ID> manager : eventManagerPool) {
-            ReadyTask<ID, ?> task = manager.popByTopic(backTopic);
+        for (EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response> manager : eventManagerPool) {
+            ReadyTask<BackTopic, ID, RequestData, Request, ResponseData, Response> task = manager.popByTopic(backTopic);
             if (task != null) {
                 timeoutManager.removeEvent(task.getId());
-                //noinspection unchecked
                 Request request = (Request) task.getRequest();
-                //noinspection unchecked
-                Callback<Request, Response> callback = (Callback<Request, Response>) task.getCallback();
+                Callback<BackTopic, RequestData, Request, ResponseData, Response> callback = task.getCallback();
                 callback.onResponse(request, response);
                 return;
             }
