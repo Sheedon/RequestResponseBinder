@@ -7,20 +7,23 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/9 2:58 下午
  */
-public class ReadyTask<ID, Request extends BaseRequest<?, ?>> {
+public class ReadyTask<BackTopic, ID,
+        RequestData, Request extends BaseRequest<BackTopic, RequestData>,
+        ResponseData, Response extends BaseResponse<BackTopic, ResponseData>> {
 
     // 请求数据
     private Request request;
     // 请求记录ID
     private ID id;
     // 反馈Callback
-    private Callback<Request, ?> callback;
+    private Callback<BackTopic, RequestData, Request, ResponseData, Response> callback;
 
-    public static <ID, Request extends BaseRequest<?, ?>>
-    ReadyTask<ID, Request> build(ID id,
-                                 Request request,
-                                 Callback<Request, ?> callback) {
-        ReadyTask<ID, Request> task = new ReadyTask<>();
+    public static <BackTopic, ID,
+            RequestData, Request extends BaseRequest<BackTopic, RequestData>,
+            ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
+    ReadyTask<BackTopic, ID, RequestData, Request, ResponseData, Response> build(ID id, Request request,
+          Callback<BackTopic, RequestData, Request, ResponseData, Response> callback) {
+        ReadyTask<BackTopic, ID, RequestData, Request, ResponseData, Response> task = new ReadyTask<>();
         task.request = request;
         task.id = id;
         task.callback = callback;
@@ -32,7 +35,7 @@ public class ReadyTask<ID, Request extends BaseRequest<?, ?>> {
         return request;
     }
 
-    public Callback<Request, ?> getCallback() {
+    public Callback<BackTopic, RequestData, Request, ResponseData, Response> getCallback() {
         return callback;
     }
 

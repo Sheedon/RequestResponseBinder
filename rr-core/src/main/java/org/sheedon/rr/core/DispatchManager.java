@@ -7,9 +7,11 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:01 下午
  */
-public interface DispatchManager<BackTopic,ID> {
+public interface DispatchManager<BackTopic, ID,
+        RequestData, Request extends BaseRequest<BackTopic, RequestData>,
+        ResponseData, Response extends BaseResponse<BackTopic, ResponseData>> {
 
-    <Data> RequestAdapter<Data> requestAdapter();
+    RequestAdapter<RequestData> requestAdapter();
 
     /**
      * 将请求行为入队，按预定策略去执行请求动作
@@ -24,7 +26,7 @@ public interface DispatchManager<BackTopic,ID> {
      * @param request  请求数据
      * @param callback 反馈监听器
      */
-    <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<Request, ?>>
+    <RRCallback extends Callback<BackTopic, RequestData, Request, ResponseData, Response>>
     void addBinder(Request request, RRCallback callback);
 
     /**
@@ -33,7 +35,7 @@ public interface DispatchManager<BackTopic,ID> {
      * @param request  请求数据
      * @param callback 反馈监听器
      */
-    <Request extends BaseRequest<?, BackTopic>, RRCallback extends Callback<Request, ?>>
+    <RRCallback extends Callback<BackTopic, RequestData, Request, ResponseData, Response>>
     void addObservable(Request request, RRCallback callback);
 
 
@@ -49,10 +51,7 @@ public interface DispatchManager<BackTopic,ID> {
      * 反馈结果监听
      *
      * @param response   反馈结果
-     * @param <Response> 反馈结果
      */
-    <Request extends BaseRequest<?, BackTopic>,
-            Response extends BaseResponse<?, BackTopic>>
     void onResponse(Response response);
 
 
