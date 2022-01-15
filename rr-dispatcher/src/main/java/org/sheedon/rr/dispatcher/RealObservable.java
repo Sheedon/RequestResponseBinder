@@ -13,16 +13,18 @@ import org.sheedon.rr.core.Observable;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/14 11:04 下午
  */
-public class RealObservable<Data, Topic, ID, Request extends BaseRequest<Data, Topic>>
-        implements Observable<Topic, Request> {
+public class RealObservable<BackTopic, ID,
+        RequestData, Request extends BaseRequest<BackTopic, RequestData>,
+        ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
+        implements Observable<BackTopic, RequestData, Request, ResponseData, Response> {
 
-    private final AbstractClient<Topic, ID> client;
+    private final AbstractClient<BackTopic, ID, RequestData, Request, ResponseData, Response> client;
     // 请求对象
     private final Request originalRequest;
     // 是否执行取消操作
     private boolean canceled = false;
 
-    protected RealObservable(AbstractClient<Topic, ID> client, Request request) {
+    protected RealObservable(AbstractClient<BackTopic, ID, RequestData, Request, ResponseData, Response> client, Request request) {
         this.client = client;
         this.originalRequest = request;
     }
@@ -30,17 +32,19 @@ public class RealObservable<Data, Topic, ID, Request extends BaseRequest<Data, T
     /**
      * 新增观察者
      */
-    static <Data, Topic, ID, Request extends BaseRequest<Data, Topic>> RealObservable<Data, Topic, ID, Request>
-    newRealObservable(AbstractClient<Topic, ID> client, Request originalRequest) {
+    static <BackTopic, ID,
+            RequestData, Request extends BaseRequest<BackTopic, RequestData>,
+            ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
+    RealObservable<BackTopic, ID, RequestData, Request, ResponseData, Response>
+    newRealObservable(AbstractClient<BackTopic, ID, RequestData, Request, ResponseData, Response> client, Request originalRequest) {
         // Safely publish the Call instance to the EventListener.
         //        call.eventListener = client.eventListenerFactory().create(call);
         return new RealObservable<>(client, originalRequest);
     }
 
     @Override
-    public <Response extends BaseResponse<?, Topic>>
-    void subscribe(Callback<Request, Response> callback) {
-        DispatchManager<Topic, ID> manager = client.getDispatchManager();
+    public void subscribe(Callback<BackTopic, RequestData, Request, ResponseData, Response> callback) {
+        DispatchManager<BackTopic, ID, RequestData,Request, ResponseData, Response> manager = client.getDispatchManager();
         manager.addObservable(originalRequest, callback);
     }
 

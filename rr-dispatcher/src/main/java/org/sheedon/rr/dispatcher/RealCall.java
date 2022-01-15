@@ -16,13 +16,15 @@ import org.sheedon.rr.timeout.ResourceBundleUtils;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/9 5:09 下午
  */
-public class RealCall<Data, Topic, ID, Request extends BaseRequest<Data, Topic>> implements Call {
+public class RealCall<BackTopic, ID,
+        RequestData, Request extends BaseRequest<BackTopic, RequestData>,
+        ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
+        implements Call<BackTopic, RequestData, Request, ResponseData, Response> {
 
     private static final String BASENAME = "dispatcher";
     private static final String DISPATCHER_KEY = "request_error";
 
-
-    private final AbstractClient<Topic, ID> client;
+    private final AbstractClient<BackTopic, ID, RequestData, Request, ResponseData, Response> client;
     // 请求对象
     private final Request originalRequest;
     // 是否执行取消操作
@@ -30,7 +32,7 @@ public class RealCall<Data, Topic, ID, Request extends BaseRequest<Data, Topic>>
     // 是否执行完成
     private boolean executed = false;
 
-    protected RealCall(AbstractClient<Topic, ID> client, Request request) {
+    protected RealCall(AbstractClient<BackTopic, ID, RequestData, Request, ResponseData, Response> client, Request request) {
         this.client = client;
         this.originalRequest = request;
     }
@@ -38,23 +40,23 @@ public class RealCall<Data, Topic, ID, Request extends BaseRequest<Data, Topic>>
     /**
      * 新增反馈类
      */
-    static <Data, Topic, ID, Request extends BaseRequest<Data, Topic>> RealCall<Data, Topic, ID, Request>
-    newRealCall(AbstractClient<Topic, ID> client, Request originalRequest) {
+    static <BackTopic, ID,
+            RequestData, Request extends BaseRequest<BackTopic, RequestData>,
+            ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
+    RealCall<BackTopic, ID, RequestData, Request, ResponseData, Response>
+    newRealCall(AbstractClient<BackTopic, ID, RequestData, Request, ResponseData, Response> client, Request originalRequest) {
         // Safely publish the Call instance to the EventListener.
         //        call.eventListener = client.eventListenerFactory().create(call);
         return new RealCall<>(client, originalRequest);
     }
 
-
-    @SuppressWarnings({"TypeParameterHidesVisibleType", "rawtypes", "unchecked"})
     @Override
-    public <Request extends BaseRequest<?, ?>, Response extends BaseResponse<Request, ?>>
-    void enqueue(Callback<Request, Response> callback) {
+    public void enqueue(Callback<BackTopic, RequestData, Request, ResponseData, Response> callback) {
         synchronized (this) {
             if (executed) throw new IllegalStateException("Already Executed");
             executed = true;
         }
-        DispatchManager manager = client.getDispatchManager();
+        DispatchManager<BackTopic, ID, RequestData, Request, ResponseData, Response> manager = client.getDispatchManager();
         manager.enqueueRequest(new AsyncCall(client, originalRequest, callback));
     }
 
@@ -78,15 +80,15 @@ public class RealCall<Data, Topic, ID, Request extends BaseRequest<Data, Topic>>
         return executed;
     }
 
-    final class AsyncCall<Response extends BaseResponse<Request, Data>> extends NamedRunnable {
+    final class AsyncCall extends NamedRunnable {
 
-        private final AbstractClient<Topic, ID> client;
+        private final AbstractClient<BackTopic, ID, RequestData, Request, ResponseData, Response> client;
         private final Request originalRequest;
-        private final Callback<Request, Response> responseCallback;
+        private final Callback<BackTopic, RequestData, Request, ResponseData, Response> responseCallback;
 
-        protected AsyncCall(AbstractClient<Topic, ID> client,
+        protected AsyncCall(AbstractClient<BackTopic, ID, RequestData, Request, ResponseData, Response> client,
                             Request originalRequest,
-                            Callback<Request, Response> responseCallback) {
+                            Callback<BackTopic, RequestData, Request, ResponseData, Response> responseCallback) {
             super("AsyncCall %s", originalRequest);
             this.client = client;
             this.originalRequest = originalRequest;
@@ -99,10 +101,10 @@ public class RealCall<Data, Topic, ID, Request extends BaseRequest<Data, Topic>>
                 return;
             }
             boolean isNeedCallback = responseCallback != null;
-            DispatchManager<Topic, ID> manager = client.getDispatchManager();
+            DispatchManager<BackTopic, ID, RequestData, Request, ResponseData, Response> manager = client.getDispatchManager();
 
-            RequestAdapter<Data> adapter = manager.requestAdapter();
-            Data body = originalRequest.getBody();
+            RequestAdapter<RequestData> adapter = manager.requestAdapter();
+            RequestData body = originalRequest.getBody();
             body = adapter.checkRequestData(body);
 
             if (isNeedCallback) {
@@ -111,8 +113,10 @@ public class RealCall<Data, Topic, ID, Request extends BaseRequest<Data, Topic>>
 
             boolean isSuccess = adapter.publish(body);
             if (!isSuccess) {
-                manager.onResponse(BaseResponse.build(originalRequest.getBackTopic(),
-                        ResourceBundleUtils.getResourceString(BASENAME, DISPATCHER_KEY)));
+                //noinspection unchecked
+                Response response = (Response) BaseResponse.build(originalRequest.getBackTopic(),
+                        ResourceBundleUtils.getResourceString(BASENAME, DISPATCHER_KEY));
+                manager.onResponse(response);
             }
 
 
