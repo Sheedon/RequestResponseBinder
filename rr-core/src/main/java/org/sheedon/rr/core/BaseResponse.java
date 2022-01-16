@@ -16,8 +16,12 @@ public class BaseResponse<BackTopic, Data> {
     // 请求数据
     private Data body;
 
-    private BaseResponse() {
+
+
+    protected BaseResponse() {
     }
+
+
 
     protected <ResponseBuilder extends BaseResponseBuilder<BackTopic, Data>> BaseResponse(ResponseBuilder builder) {
         this.backTopic = builder.getBackTopic();
@@ -28,8 +32,24 @@ public class BaseResponse<BackTopic, Data> {
         return backTopic;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
     public Data getBody() {
         return body;
+    }
+
+    public void setBackTopic(BackTopic backTopic) {
+        this.backTopic = backTopic;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public void setBody(Data body) {
+        this.body = body;
     }
 
     public static <BackTopic, Data> BaseResponse<BackTopic, Data> build(BackTopic backTopic, String message) {
@@ -38,4 +58,5 @@ public class BaseResponse<BackTopic, Data> {
         response.message = message;
         return response;
     }
+
 }
