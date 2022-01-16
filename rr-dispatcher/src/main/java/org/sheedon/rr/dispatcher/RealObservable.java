@@ -32,7 +32,7 @@ public class RealObservable<BackTopic, ID,
     /**
      * 新增观察者
      */
-    static <BackTopic, ID,
+    public static <BackTopic, ID,
             RequestData, Request extends BaseRequest<BackTopic, RequestData>,
             ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
     RealObservable<BackTopic, ID, RequestData, Request, ResponseData, Response>

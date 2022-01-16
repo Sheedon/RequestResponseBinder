@@ -8,6 +8,7 @@ import org.sheedon.rr.core.EventBehavior;
 import org.sheedon.rr.core.EventManager;
 import org.sheedon.rr.core.Observable;
 import org.sheedon.rr.core.RequestAdapter;
+import org.sheedon.rr.core.ResponseAdapter;
 import org.sheedon.rr.timeout.TimeoutManager;
 
 import java.util.LinkedList;
@@ -25,12 +26,14 @@ public abstract class AbstractClient<BackTopic, ID,
         RequestData, Request extends BaseRequest<BackTopic, RequestData>,
         ResponseData, Response extends BaseResponse<BackTopic, ResponseData>> {
 
-    private final DispatchManager<BackTopic, ID, RequestData, Request, ResponseData, Response> dispatcher;
+    protected final DispatchManager<BackTopic, ID, RequestData, Request, ResponseData, Response> dispatcher;
     private final int timeout;
+    protected ResponseAdapter<BackTopic, ResponseData, Response> responseAdapter;
 
     protected AbstractClient(Builder<BackTopic, ID, RequestData, Request, ResponseData, Response> builder) {
         this.dispatcher = builder.dispatcher;
         this.timeout = builder.timeout;
+        this.responseAdapter = builder.responseAdapter;
     }
 
     public DispatchManager<BackTopic, ID, RequestData, Request, ResponseData, Response> getDispatchManager() {
@@ -64,6 +67,8 @@ public abstract class AbstractClient<BackTopic, ID,
         protected TimeoutManager<ID> timeoutManager;
         // 请求适配器
         protected RequestAdapter<RequestData> requestAdapter;
+        // 反馈适配器
+        protected ResponseAdapter<BackTopic, ResponseData, Response> responseAdapter;
 
         public Builder() {
             timeout = 5;
@@ -164,6 +169,18 @@ public abstract class AbstractClient<BackTopic, ID,
             return this;
         }
 
+        /**
+         * 设置响应调度适配者
+         *
+         * @param responseAdapter 响应调度适配者
+         * @return Builder<BackTopic, ID>
+         */
+        public Builder<BackTopic, ID, RequestData, Request, ResponseData, Response>
+        responseAdapter(ResponseAdapter<BackTopic, ResponseData, Response> responseAdapter) {
+            this.responseAdapter = Objects.requireNonNull(responseAdapter, "responseAdapter == null");
+            return this;
+        }
+
 
         public <Client extends AbstractClient<BackTopic, ID, RequestData, Request, ResponseData, Response>> Client build() {
             if (behaviorServices.isEmpty()) {
@@ -178,9 +195,12 @@ public abstract class AbstractClient<BackTopic, ID,
             if (requestAdapter == null) {
                 throw new NullPointerException("please add requestAdapter()");
             }
+            if (responseAdapter == null) {
+                throw new NullPointerException("please add responseAdapter()");
+            }
             if (dispatcher == null) {
                 dispatcher = new Dispatcher<>(behaviorServices, eventManagerPool,
-                        timeoutManager, requestAdapter);
+                        timeoutManager, requestAdapter, responseAdapter);
             }
             return builder();
         }

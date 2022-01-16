@@ -40,7 +40,7 @@ public class RealCall<BackTopic, ID,
     /**
      * 新增反馈类
      */
-    static <BackTopic, ID,
+    public static <BackTopic, ID,
             RequestData, Request extends BaseRequest<BackTopic, RequestData>,
             ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
     RealCall<BackTopic, ID, RequestData, Request, ResponseData, Response>
@@ -51,7 +51,7 @@ public class RealCall<BackTopic, ID,
     }
 
     @Override
-    public void enqueue(Callback<BackTopic, RequestData, Request, ResponseData, Response> callback) {
+    public <RRCallback extends Callback<BackTopic, RequestData, Request, ResponseData, Response>> void enqueue(RRCallback callback) {
         synchronized (this) {
             if (executed) throw new IllegalStateException("Already Executed");
             executed = true;

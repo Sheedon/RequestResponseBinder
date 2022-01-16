@@ -16,7 +16,8 @@ public interface Call<BackTopic,
      *
      * @param callback 反馈内容
      */
-    void enqueue(Callback<BackTopic, RequestData, Request, ResponseData, Response> callback);
+    <RRCallback extends Callback<BackTopic, RequestData, Request, ResponseData, Response>>
+    void enqueue(RRCallback callback);
 
     /**
      * 请求提交，标志着这个请求无需监听反馈
