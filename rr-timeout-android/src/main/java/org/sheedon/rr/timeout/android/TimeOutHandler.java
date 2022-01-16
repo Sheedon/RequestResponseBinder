@@ -5,12 +5,9 @@ import android.os.HandlerThread;
 import android.os.Message;
 
 import org.sheedon.rr.timeout.DelayEvent;
-import org.sheedon.rr.timeout.OnTimeOutListener;
 import org.sheedon.rr.timeout.ResourceBundleUtils;
 import org.sheedon.rr.timeout.TimeoutManager;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -31,12 +28,11 @@ public class TimeOutHandler<T> extends TimeoutManager<T> {
     // 事务处理器
     private final Handler workHandler;
 
-    public TimeOutHandler(OnTimeOutListener<T> listener) {
-        this(TimeOutHandler.class.getCanonicalName(), listener);
+    public TimeOutHandler() {
+        this(TimeOutHandler.class.getCanonicalName());
     }
 
-    public TimeOutHandler(String name, OnTimeOutListener<T> listener) {
-        super(listener);
+    public TimeOutHandler(String name) {
         TIMEOUT = ResourceBundleUtils.getResourceString(BASENAME, RESOURCE_KEY);
 
         // 创建一个HandlerThread 用于执行消息Loop

@@ -12,7 +12,7 @@ public abstract class TimeoutManager<T> {
 
     protected OnTimeOutListener<T> listener;
 
-    public TimeoutManager(OnTimeOutListener<T> listener) {
+    public void setListener(OnTimeOutListener<T> listener) {
         this.listener = listener;
     }
 

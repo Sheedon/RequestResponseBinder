@@ -8,10 +8,13 @@ import org.sheedon.rr.core.EventBehavior;
 import org.sheedon.rr.core.EventManager;
 import org.sheedon.rr.core.ReadyTask;
 import org.sheedon.rr.core.RequestAdapter;
+import org.sheedon.rr.core.ResponseAdapter;
 import org.sheedon.rr.timeout.DelayEvent;
+import org.sheedon.rr.timeout.OnTimeOutListener;
 import org.sheedon.rr.timeout.TimeoutManager;
 
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * 请求响应调度者
@@ -34,15 +37,21 @@ public class Dispatcher<BackTopic, ID,
     private final TimeoutManager<ID> timeoutManager;
     // 请求适配器
     private final RequestAdapter<RequestData> requestAdapter;
+    //
+    private final ResponseAdapter<BackTopic, ResponseData, Response> responseAdapter;
 
     public Dispatcher(List<EventBehavior> behaviorServices,
                       List<EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response>> eventManagerPool,
                       TimeoutManager<ID> timeoutManager,
-                      RequestAdapter<RequestData> requestAdapter) {
+                      RequestAdapter<RequestData> requestAdapter,
+                      ResponseAdapter<BackTopic, ResponseData, Response> responseAdapter) {
         this.behaviorServices = behaviorServices;
         this.eventManagerPool = eventManagerPool;
         this.timeoutManager = timeoutManager;
         this.requestAdapter = requestAdapter;
+        this.responseAdapter = responseAdapter;
+
+        this.timeoutManager.setListener(new TimeOutListener());
     }
 
     @Override
@@ -102,6 +111,29 @@ public class Dispatcher<BackTopic, ID,
                 Callback<BackTopic, RequestData, Request, ResponseData, Response> callback = task.getCallback();
                 callback.onResponse(request, response);
                 return;
+            }
+        }
+    }
+
+
+    /**
+     * 超时监听器
+     */
+    private class TimeOutListener implements OnTimeOutListener<ID> {
+
+        @Override
+        public void onTimeOut(ID id, TimeoutException e) {
+            for (EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response> manager : eventManagerPool) {
+                ReadyTask<BackTopic, ID, RequestData, Request, ResponseData, Response> task = manager.popById(id);
+                if (task != null) {
+                    timeoutManager.removeEvent(task.getId());
+                    Request request = (Request) task.getRequest();
+                    Callback<BackTopic, RequestData, Request, ResponseData, Response> callback = task.getCallback();
+                    BackTopic topic = task.getRequest().getBackTopic();
+                    Response failureResponse = responseAdapter.buildFailure(topic, e.getMessage());
+                    callback.onResponse(request, failureResponse);
+                    return;
+                }
             }
         }
     }
