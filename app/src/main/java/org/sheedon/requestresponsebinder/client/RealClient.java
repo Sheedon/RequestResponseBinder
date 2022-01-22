@@ -2,9 +2,8 @@ package org.sheedon.requestresponsebinder.client;
 
 import android.util.Log;
 
-import org.sheedon.requestresponsebinder.TestMessage;
 import org.sheedon.requestresponsebinder.model.Call;
-import org.sheedon.requestresponsebinder.model.CallbackImpl;
+import org.sheedon.requestresponsebinder.model.Callback;
 import org.sheedon.requestresponsebinder.model.Request;
 import org.sheedon.requestresponsebinder.model.Response;
 
@@ -39,7 +38,7 @@ public class RealClient {
                 .body(message)
                 .build();
         Call call = binderClient.newCall(request);
-        call.enqueue(new CallbackImpl() {
+        call.enqueue(new Callback() {
             @Override
             public void onFailure(Throwable e) {
                 Log.v("SXD", "e:" + e.getMessage());

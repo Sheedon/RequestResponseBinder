@@ -5,8 +5,8 @@ package org.sheedon.rr.core;
  * 除此之外，对于一个消息的超时限制，可以通过提供的超时时限来设定。
  * 其他则为实际请求数据
  *
- * <Data>: 实际请求数据model
- * <T>: 反馈主题类型
+ * <BackTopic>: 反馈主题类型
+ * <Data>: 实际请求数据类型
  *
  * @Author: sheedon
  * @Email: sheedonsun@163.com
