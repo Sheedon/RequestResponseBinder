@@ -90,22 +90,6 @@ public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
         }
     }
 
-    @Override
-    public void onResponse(IResponse<BackTopic, ResponseData> response) {
-        BackTopic backTopic = response.backTopic();
-        for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
-            ReadyTask<BackTopic, ID, RequestData, ResponseData> task = manager.popByTopic(backTopic);
-            if (task != null) {
-                timeoutManager.removeEvent(task.getId());
-                IRequest<BackTopic, RequestData> request = task.getRequest();
-                Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback
-                        = task.getCallback();
-                callback.onResponse(request, response);
-                return;
-            }
-        }
-    }
-
     /**
      * 执行响应反馈操作
      *
@@ -128,6 +112,22 @@ public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
     private void enqueueResponse(Runnable runnable) {
         for (EventBehavior service : behaviorServices) {
             if (service.enqueueCallbackEvent(runnable)) {
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void onResponse(IResponse<BackTopic, ResponseData> response) {
+        BackTopic backTopic = response.backTopic();
+        for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
+            ReadyTask<BackTopic, ID, RequestData, ResponseData> task = manager.popByTopic(backTopic);
+            if (task != null) {
+                timeoutManager.removeEvent(task.getId());
+                IRequest<BackTopic, RequestData> request = task.getRequest();
+                Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback
+                        = task.getCallback();
+                callback.onResponse(request, response);
                 return;
             }
         }
