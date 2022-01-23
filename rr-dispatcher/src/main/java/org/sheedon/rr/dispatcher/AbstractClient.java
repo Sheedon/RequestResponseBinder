@@ -23,14 +23,12 @@ import java.util.Objects;
  */
 public abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> {
 
-    protected final DispatchManager<BackTopic, RequestData, ResponseData> dispatcher;
+    private final DispatchManager<BackTopic, RequestData, ResponseData> dispatcher;
     private final int timeout;
-    protected ResponseAdapter<BackTopic, ResponseData> responseAdapter;
 
     protected AbstractClient(Builder<BackTopic, ID, RequestData, ResponseData> builder) {
         this.dispatcher = builder.dispatcher;
         this.timeout = builder.timeout;
-        this.responseAdapter = builder.responseAdapter;
     }
 
     public DispatchManager<BackTopic, RequestData, ResponseData> getDispatchManager() {
