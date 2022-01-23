@@ -1,7 +1,7 @@
 package org.sheedon.requestresponsebinder.model;
 
 /**
- * java类作用描述
+ * 协议客户端中使用的Callback 指定「Request，Response」
  *
  * @Author: sheedon
  * @Email: sheedonsun@163.com

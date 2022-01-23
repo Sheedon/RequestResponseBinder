@@ -8,7 +8,7 @@ import org.sheedon.rr.core.IResponse;
 import org.sheedon.rr.dispatcher.RealObservable;
 
 /**
- * java类作用描述
+ * 真实观察者包装类，用于调度本地构建的subscribe
  *
  * @Author: sheedon
  * @Email: sheedonsun@163.com
@@ -36,7 +36,7 @@ public class RealObserverWrapper implements Observable {
     @Override
     public void subscribe(org.sheedon.requestresponsebinder.model.Callback callback) {
         //noinspection unchecked,rawtypes
-        observable.subscribe((Callback) callback);
+        this.subscribe((Callback) callback);
     }
 
     @Override

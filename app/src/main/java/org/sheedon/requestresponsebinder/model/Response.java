@@ -1,11 +1,13 @@
 package org.sheedon.requestresponsebinder.model;
 
+import androidx.annotation.NonNull;
+
 import org.sheedon.requestresponsebinder.TestMessage;
 import org.sheedon.rr.dispatcher.model.BaseResponse;
 import org.sheedon.rr.dispatcher.model.BaseResponseBuilder;
 
 /**
- * java类作用描述
+ * 协议客户端中使用的响应对象
  *
  * @Author: sheedon
  * @Email: sheedonsun@163.com
@@ -39,6 +41,7 @@ public class Response extends BaseResponse<String, TestMessage> {
         return response;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "BaseResponse{" +

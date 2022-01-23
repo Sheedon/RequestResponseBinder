@@ -8,7 +8,7 @@ import org.sheedon.rr.core.IResponse;
 import org.sheedon.rr.dispatcher.RealCall;
 
 /**
- * java类作用描述
+ * 真实Call包装类，用于调度本地构建的enqueue
  *
  * @Author: sheedon
  * @Email: sheedonsun@163.com
@@ -36,7 +36,7 @@ public class RealCallWrapper implements Call {
     @Override
     public void enqueue(org.sheedon.requestresponsebinder.model.Callback callback) {
         //noinspection rawtypes,unchecked,unchecked
-        realCall.enqueue((Callback)callback);
+        this.enqueue((Callback)callback);
     }
 
     @Override

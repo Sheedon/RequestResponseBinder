@@ -1,7 +1,6 @@
 package org.sheedon.requestresponsebinder.client;
 
 import org.sheedon.requestresponsebinder.TestMessage;
-import org.sheedon.requestresponsebinder.datamanager.TestRealClient;
 import org.sheedon.requestresponsebinder.model.Call;
 import org.sheedon.requestresponsebinder.model.Observable;
 import org.sheedon.requestresponsebinder.model.RealCallWrapper;
@@ -9,7 +8,6 @@ import org.sheedon.requestresponsebinder.model.RealObserverWrapper;
 import org.sheedon.requestresponsebinder.model.Request;
 import org.sheedon.requestresponsebinder.model.Response;
 import org.sheedon.rr.core.IRequest;
-import org.sheedon.rr.core.RequestAdapter;
 import org.sheedon.rr.core.ResponseAdapter;
 import org.sheedon.rr.dispatcher.AbstractClient;
 import org.sheedon.rr.dispatcher.DefaultEventBehaviorService;
@@ -30,10 +28,6 @@ public class BinderClient extends AbstractClient<String, String, String, TestMes
 
     protected BinderClient(Builder builder) {
         super(builder);
-        TestRealClient.getInstance().listener(result -> {
-            Response response = responseAdapter.buildResponse(result);
-            dispatcher.enqueueResponse(() -> dispatcher.onResponse(response));
-        });
     }
 
     @Override
@@ -46,33 +40,7 @@ public class BinderClient extends AbstractClient<String, String, String, TestMes
         return RealObserverWrapper.newRealObservable(this, (Request) request);
     }
 
-    public static class TestRequestAdapter implements RequestAdapter<String> {
-
-        private final String baseUrl;
-
-        public TestRequestAdapter(String baseUrl) {
-            this.baseUrl = baseUrl == null ? "" : baseUrl;
-        }
-
-        @Override
-        public String checkRequestData(String message) {
-            if (message == null) {
-                return "11111111111";
-            }
-
-            return message;
-        }
-
-        @Override
-        public boolean publish(String message) {
-            if (message == null) {
-                return false;
-            }
-            TestRealClient.getInstance().publish(message);
-            return true;
-        }
-    }
-
+    @SuppressWarnings("unchecked")
     public static class TestResponseAdapter implements ResponseAdapter<String, TestMessage> {
 
         public TestResponseAdapter() {
@@ -125,15 +93,15 @@ public class BinderClient extends AbstractClient<String, String, String, TestMes
             if (timeoutManager == null) {
                 timeoutManager = new TimeOutHandler<>();
             }
-            if (requestAdapter == null) {
-                requestAdapter = new TestRequestAdapter(baseUrl);
+            if (dispatchAdapter == null) {
+                dispatchAdapter = new WrapperClient(baseUrl);
             }
             if (responseAdapter == null) {
                 responseAdapter = new TestResponseAdapter();
             }
             if (dispatcher == null) {
                 dispatcher = new Dispatcher<>(behaviorServices, eventManagerPool,
-                        timeoutManager, requestAdapter, responseAdapter);
+                        timeoutManager, dispatchAdapter, responseAdapter);
             }
             return builder();
         }

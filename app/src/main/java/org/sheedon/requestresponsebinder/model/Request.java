@@ -1,11 +1,12 @@
 package org.sheedon.requestresponsebinder.model;
 
+import androidx.annotation.NonNull;
+
 import org.sheedon.rr.dispatcher.model.BaseRequest;
 import org.sheedon.rr.dispatcher.model.BaseRequestBuilder;
-import org.sheedon.rr.core.IRequest;
 
 /**
- * java类作用描述
+ * 协议客户端中使用的请求对象
  *
  * @Author: sheedon
  * @Email: sheedonsun@163.com
@@ -32,6 +33,7 @@ public class Request extends BaseRequest<String, String> {
         }
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "BaseRequest{" +
