@@ -1,12 +1,12 @@
 package org.sheedon.rr.dispatcher;
 
 import org.sheedon.rr.core.Call;
+import org.sheedon.rr.core.DispatchAdapter;
 import org.sheedon.rr.core.DispatchManager;
 import org.sheedon.rr.core.EventBehavior;
 import org.sheedon.rr.core.EventManager;
 import org.sheedon.rr.core.IRequest;
 import org.sheedon.rr.core.Observable;
-import org.sheedon.rr.core.RequestAdapter;
 import org.sheedon.rr.core.ResponseAdapter;
 import org.sheedon.rr.timeout.TimeoutManager;
 
@@ -62,8 +62,8 @@ public abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> {
         protected List<EventManager<BackTopic, ID, RequestData, ResponseData>> eventManagerPool = new LinkedList<>();
         // 超时处理者
         protected TimeoutManager<ID> timeoutManager;
-        // 请求适配器
-        protected RequestAdapter<RequestData> requestAdapter;
+        // 调度适配器
+        protected DispatchAdapter<RequestData, ResponseData> dispatchAdapter;
         // 反馈适配器
         protected ResponseAdapter<BackTopic, ResponseData> responseAdapter;
 
@@ -156,13 +156,16 @@ public abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> {
         }
 
         /**
-         * 设置请求调度适配者
+         * 设置调度调度适配者
          *
-         * @param requestAdapter 请求调度适配者
+         * @param dispatchAdapter 调度适配者
          * @return Builder<BackTopic, ID>
          */
-        public Builder<BackTopic, ID, RequestData, ResponseData> requestAdapter(RequestAdapter<RequestData> requestAdapter) {
-            this.requestAdapter = Objects.requireNonNull(requestAdapter, "requestAdapter == null");
+        public Builder<BackTopic, ID, RequestData, ResponseData> dispatchAdapter(DispatchAdapter<RequestData, ResponseData> dispatchAdapter) {
+            this.dispatchAdapter = Objects.requireNonNull(dispatchAdapter, "dispatchAdapter == null");
+            if (dispatchAdapter.loadRequestAdapter() == null) {
+                throw new NullPointerException("requestAdapter == null");
+            }
             return this;
         }
 
@@ -189,15 +192,15 @@ public abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> {
             if (timeoutManager == null) {
                 throw new NullPointerException("please add timeoutManager()");
             }
-            if (requestAdapter == null) {
-                throw new NullPointerException("please add requestAdapter()");
+            if (dispatchAdapter == null) {
+                throw new NullPointerException("please add dispatchAdapter()");
             }
             if (responseAdapter == null) {
                 throw new NullPointerException("please add responseAdapter()");
             }
             if (dispatcher == null) {
                 dispatcher = new Dispatcher<>(behaviorServices, eventManagerPool,
-                        timeoutManager, requestAdapter, responseAdapter);
+                        timeoutManager, dispatchAdapter, responseAdapter);
             }
             return builder();
         }

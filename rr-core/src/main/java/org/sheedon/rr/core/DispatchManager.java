@@ -38,14 +38,6 @@ public interface DispatchManager<BackTopic, RequestData, ResponseData> {
 
 
     /**
-     * 反馈行为入队，按照预定策略去执行反馈动作
-     *
-     * @param runnable 反馈的Runnable
-     */
-    void enqueueResponse(Runnable runnable);
-
-
-    /**
      * 反馈结果监听
      *
      * @param response 反馈结果

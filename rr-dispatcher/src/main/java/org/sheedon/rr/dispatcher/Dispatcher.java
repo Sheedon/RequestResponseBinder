@@ -1,6 +1,7 @@
 package org.sheedon.rr.dispatcher;
 
 import org.sheedon.rr.core.Callback;
+import org.sheedon.rr.core.DispatchAdapter;
 import org.sheedon.rr.core.DispatchManager;
 import org.sheedon.rr.core.EventBehavior;
 import org.sheedon.rr.core.EventManager;
@@ -24,7 +25,8 @@ import java.util.concurrent.TimeoutException;
  * @Date: 2022/1/8 9:36 下午
  */
 public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
-        implements DispatchManager<BackTopic, RequestData, ResponseData> {
+        implements DispatchManager<BackTopic, RequestData, ResponseData>,
+        DispatchAdapter.OnCallListener<ResponseData> {
 
 
     // 事件行为服务，将任务放入服务中去执行
@@ -41,12 +43,13 @@ public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
     public Dispatcher(List<EventBehavior> behaviorServices,
                       List<EventManager<BackTopic, ID, RequestData, ResponseData>> eventManagerPool,
                       TimeoutManager<ID> timeoutManager,
-                      RequestAdapter<RequestData> requestAdapter,
+                      DispatchAdapter<RequestData, ResponseData> dispatchAdapter,
                       ResponseAdapter<BackTopic, ResponseData> responseAdapter) {
         this.behaviorServices = behaviorServices;
         this.eventManagerPool = eventManagerPool;
         this.timeoutManager = timeoutManager;
-        this.requestAdapter = requestAdapter;
+        this.requestAdapter = dispatchAdapter.loadRequestAdapter();
+        dispatchAdapter.bindCallListener(this);
         this.responseAdapter = responseAdapter;
 
         this.timeoutManager.setListener(new TimeOutListener());
@@ -88,15 +91,6 @@ public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
     }
 
     @Override
-    public void enqueueResponse(Runnable runnable) {
-        for (EventBehavior service : behaviorServices) {
-            if (service.enqueueCallbackEvent(runnable)) {
-                return;
-            }
-        }
-    }
-
-    @Override
     public void onResponse(IResponse<BackTopic, ResponseData> response) {
         BackTopic backTopic = response.backTopic();
         for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
@@ -107,6 +101,33 @@ public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
                 Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback
                         = task.getCallback();
                 callback.onResponse(request, response);
+                return;
+            }
+        }
+    }
+
+    /**
+     * 执行响应反馈操作
+     *
+     * @param result ResponseData
+     */
+    @Override
+    public void callResponse(final ResponseData result) {
+        enqueueResponse(() -> {
+            IResponse<BackTopic, ResponseData> response = responseAdapter.buildResponse(result);
+            onResponse(response);
+        });
+
+    }
+
+    /**
+     * 反馈行为入队，按照预定策略去执行反馈动作
+     *
+     * @param runnable 反馈的Runnable
+     */
+    private void enqueueResponse(Runnable runnable) {
+        for (EventBehavior service : behaviorServices) {
+            if (service.enqueueCallbackEvent(runnable)) {
                 return;
             }
         }
