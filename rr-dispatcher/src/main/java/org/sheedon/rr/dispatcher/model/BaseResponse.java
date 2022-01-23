@@ -1,4 +1,6 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.dispatcher.model;
+
+import org.sheedon.rr.core.IResponse;
 
 /**
  * 基础反馈类，需要包含的内容包括「返回主题」和「返回数据」
@@ -7,7 +9,7 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:50 下午
  */
-public class BaseResponse<BackTopic, Data> {
+public class BaseResponse<BackTopic, Data> implements IResponse<BackTopic, Data> {
 
     // 反馈绑定主题
     private BackTopic backTopic;
@@ -24,19 +26,22 @@ public class BaseResponse<BackTopic, Data> {
 
 
     protected <ResponseBuilder extends BaseResponseBuilder<BackTopic, Data>> BaseResponse(ResponseBuilder builder) {
-        this.backTopic = builder.getBackTopic();
-        this.body = builder.getBody();
+        this.backTopic = builder.backTopic();
+        this.body = builder.body();
     }
 
-    public BackTopic getBackTopic() {
+    @Override
+    public BackTopic backTopic() {
         return backTopic;
     }
 
-    public String getMessage() {
+    @Override
+    public String message() {
         return message;
     }
 
-    public Data getBody() {
+    @Override
+    public Data body() {
         return body;
     }
 
@@ -52,11 +57,10 @@ public class BaseResponse<BackTopic, Data> {
         this.body = body;
     }
 
-    public static <BackTopic, Data> BaseResponse<BackTopic, Data> build(BackTopic backTopic, String message) {
+    public static <BackTopic, Data> IResponse<BackTopic, Data> build(BackTopic backTopic, String message) {
         BaseResponse<BackTopic, Data> response = new BaseResponse<>();
         response.backTopic = backTopic;
         response.message = message;
         return response;
     }
-
 }

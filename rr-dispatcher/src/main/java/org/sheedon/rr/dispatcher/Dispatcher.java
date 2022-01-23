@@ -1,11 +1,11 @@
 package org.sheedon.rr.dispatcher;
 
-import org.sheedon.rr.core.BaseRequest;
-import org.sheedon.rr.core.BaseResponse;
 import org.sheedon.rr.core.Callback;
 import org.sheedon.rr.core.DispatchManager;
 import org.sheedon.rr.core.EventBehavior;
 import org.sheedon.rr.core.EventManager;
+import org.sheedon.rr.core.IRequest;
+import org.sheedon.rr.core.IResponse;
 import org.sheedon.rr.core.ReadyTask;
 import org.sheedon.rr.core.RequestAdapter;
 import org.sheedon.rr.core.ResponseAdapter;
@@ -23,28 +23,26 @@ import java.util.concurrent.TimeoutException;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 9:36 下午
  */
-public class Dispatcher<BackTopic, ID,
-        RequestData, Request extends BaseRequest<BackTopic, RequestData>,
-        ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
-        implements DispatchManager<BackTopic, ID, RequestData, Request, ResponseData, Response> {
+public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
+        implements DispatchManager<BackTopic, RequestData, ResponseData> {
 
 
     // 事件行为服务，将任务放入服务中去执行
     private final List<EventBehavior> behaviorServices;
     // 事件池
-    private final List<EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response>> eventManagerPool;
+    private final List<EventManager<BackTopic, ID, RequestData, ResponseData>> eventManagerPool;
     // 超时处理者
     private final TimeoutManager<ID> timeoutManager;
     // 请求适配器
     private final RequestAdapter<RequestData> requestAdapter;
-    //
-    private final ResponseAdapter<BackTopic, ResponseData, Response> responseAdapter;
+    // 响应适配器
+    private final ResponseAdapter<BackTopic, ResponseData> responseAdapter;
 
     public Dispatcher(List<EventBehavior> behaviorServices,
-                      List<EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response>> eventManagerPool,
+                      List<EventManager<BackTopic, ID, RequestData, ResponseData>> eventManagerPool,
                       TimeoutManager<ID> timeoutManager,
                       RequestAdapter<RequestData> requestAdapter,
-                      ResponseAdapter<BackTopic, ResponseData, Response> responseAdapter) {
+                      ResponseAdapter<BackTopic, ResponseData> responseAdapter) {
         this.behaviorServices = behaviorServices;
         this.eventManagerPool = eventManagerPool;
         this.timeoutManager = timeoutManager;
@@ -69,9 +67,8 @@ public class Dispatcher<BackTopic, ID,
     }
 
     @Override
-    public <RRCallback extends Callback<BackTopic, RequestData, Request, ResponseData, Response>>
-    void addBinder(Request request, RRCallback callback) {
-        for (EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response> manager : eventManagerPool) {
+    public void addBinder(IRequest<BackTopic, RequestData> request, Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback) {
+        for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
             DelayEvent<ID> event = manager.push(request, callback);
             if (event != null) {
                 timeoutManager.addEvent(event);
@@ -81,10 +78,9 @@ public class Dispatcher<BackTopic, ID,
     }
 
     @Override
-    public <RRCallback extends Callback<BackTopic, RequestData, Request, ResponseData, Response>>
-    void addObservable(Request request, RRCallback callback) {
-        for (EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response> manager : eventManagerPool) {
-            boolean subscribed = manager.subscribe(request.getBackTopic(), callback);
+    public void addObservable(IRequest<BackTopic, RequestData> request, Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback) {
+        for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
+            boolean subscribed = manager.subscribe(request.backTopic(), callback);
             if (subscribed) {
                 return;
             }
@@ -101,20 +97,20 @@ public class Dispatcher<BackTopic, ID,
     }
 
     @Override
-    public void onResponse(Response response) {
-        BackTopic backTopic = response.getBackTopic();
-        for (EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response> manager : eventManagerPool) {
-            ReadyTask<BackTopic, ID, RequestData, Request, ResponseData, Response> task = manager.popByTopic(backTopic);
+    public void onResponse(IResponse<BackTopic, ResponseData> response) {
+        BackTopic backTopic = response.backTopic();
+        for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
+            ReadyTask<BackTopic, ID, RequestData, ResponseData> task = manager.popByTopic(backTopic);
             if (task != null) {
                 timeoutManager.removeEvent(task.getId());
-                Request request = (Request) task.getRequest();
-                Callback<BackTopic, RequestData, Request, ResponseData, Response> callback = task.getCallback();
+                IRequest<BackTopic, RequestData> request = task.getRequest();
+                Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback
+                        = task.getCallback();
                 callback.onResponse(request, response);
                 return;
             }
         }
     }
-
 
     /**
      * 超时监听器
@@ -123,14 +119,16 @@ public class Dispatcher<BackTopic, ID,
 
         @Override
         public void onTimeOut(ID id, TimeoutException e) {
-            for (EventManager<BackTopic, ID, RequestData, Request, ResponseData, Response> manager : eventManagerPool) {
-                ReadyTask<BackTopic, ID, RequestData, Request, ResponseData, Response> task = manager.popById(id);
+            for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
+                ReadyTask<BackTopic, ID, RequestData, ResponseData> task = manager.popById(id);
                 if (task != null) {
                     timeoutManager.removeEvent(task.getId());
-                    Request request = (Request) task.getRequest();
-                    Callback<BackTopic, RequestData, Request, ResponseData, Response> callback = task.getCallback();
-                    BackTopic topic = task.getRequest().getBackTopic();
-                    Response failureResponse = responseAdapter.buildFailure(topic, e.getMessage());
+                    IRequest<BackTopic, RequestData> request = task.getRequest();
+                    Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback
+                            = task.getCallback();
+                    BackTopic topic = task.getRequest().backTopic();
+                    IResponse<BackTopic, ResponseData> failureResponse
+                            = responseAdapter.buildFailure(topic, e.getMessage());
                     callback.onResponse(request, failureResponse);
                     return;
                 }

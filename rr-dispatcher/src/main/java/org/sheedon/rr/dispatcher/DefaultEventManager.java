@@ -1,9 +1,9 @@
 package org.sheedon.rr.dispatcher;
 
-import org.sheedon.rr.core.BaseRequest;
-import org.sheedon.rr.core.BaseResponse;
 import org.sheedon.rr.core.Callback;
 import org.sheedon.rr.core.EventManager;
+import org.sheedon.rr.core.IRequest;
+import org.sheedon.rr.core.IResponse;
 import org.sheedon.rr.core.ReadyTask;
 import org.sheedon.rr.timeout.DelayEvent;
 
@@ -21,31 +21,30 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/9 2:45 下午
  */
-public class DefaultEventManager<BackTopic,
-        RequestData, Request extends BaseRequest<BackTopic, RequestData>,
-        ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
-        implements EventManager<BackTopic, String, RequestData, Request, ResponseData, Response> {
+public class DefaultEventManager<BackTopic, RequestData, ResponseData>
+        implements EventManager<BackTopic, String, RequestData, ResponseData> {
 
     // 以请求ID为键，以请求任务为值的请求数据池
-    private final Map<String, ReadyTask<BackTopic, String, RequestData, Request, ResponseData, Response>> readyPool
+    private final Map<String, ReadyTask<BackTopic, String, RequestData, ResponseData>> readyPool
             = new ConcurrentHashMap<>();
     // 主题队列池，反馈主题为键，同样的反馈主题的内容，依次存入有序队列中
     private final Map<BackTopic, Deque<String>> topicDequePool = new LinkedHashMap<>();
     // 监听反馈池
-    private final Map<BackTopic, Callback<BackTopic, RequestData, Request, ResponseData, Response>> callbackPool = new ConcurrentHashMap<>();
+    private final Map<BackTopic, Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>> callbackPool = new ConcurrentHashMap<>();
 
     @Override
-    public DelayEvent<String> push(Request request, Callback<BackTopic, RequestData, Request, ResponseData, Response> callback) {
+    public DelayEvent<String> push(IRequest<BackTopic, RequestData> request,
+                                   Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback) {
         if (request == null) {
             throw new NullPointerException("request is null");
         }
 
         String id = UUID.randomUUID().toString();
-        DelayEvent<String> event = DelayEvent.build(id, System.currentTimeMillis() + request.getDelayMilliSecond());
+        DelayEvent<String> event = DelayEvent.build(id, System.currentTimeMillis() + request.delayMilliSecond());
         // 添加准备反馈任务集合
         readyPool.put(id, ReadyTask.build(id, request, callback));
         // 添加网络反馈集合
-        topicDequePool.put(request.getBackTopic(), getNetCallDeque(request.getBackTopic(), id));
+        topicDequePool.put(request.backTopic(), getNetCallDeque(request.backTopic(), id));
         return event;
     }
 
@@ -74,7 +73,7 @@ public class DefaultEventManager<BackTopic,
      * @return Callback<?, ?>
      */
     @Override
-    public ReadyTask<BackTopic, String, RequestData, Request, ResponseData, Response> popByTopic(BackTopic backTopic) {
+    public ReadyTask<BackTopic, String, RequestData, ResponseData> popByTopic(BackTopic backTopic) {
         synchronized (topicDequePool) {
             Deque<String> deque = topicDequePool.get(backTopic);
             if (deque == null || deque.size() == 0)
@@ -92,18 +91,19 @@ public class DefaultEventManager<BackTopic,
      * @return Callback
      */
     @Override
-    public ReadyTask<BackTopic, String, RequestData, Request, ResponseData, Response> popById(String id) {
+    public ReadyTask<BackTopic, String, RequestData, ResponseData> popById(String id) {
         return readyPool.remove(id);
     }
 
     @Override
-    public boolean subscribe(BackTopic backTopic, Callback<BackTopic, RequestData, Request, ResponseData, Response> callback) {
+    public boolean subscribe(BackTopic backTopic, Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback) {
         callbackPool.put(backTopic, callback);
         return true;
     }
 
     @Override
-    public Callback<BackTopic, RequestData, Request, ResponseData, Response> loadObservable(BackTopic backTopic) {
+    public Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>
+    loadObservable(BackTopic backTopic) {
         return callbackPool.get(backTopic);
     }
 }

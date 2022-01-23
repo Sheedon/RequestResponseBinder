@@ -7,23 +7,21 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/9 2:58 下午
  */
-public class ReadyTask<BackTopic, ID,
-        RequestData, Request extends BaseRequest<BackTopic, RequestData>,
-        ResponseData, Response extends BaseResponse<BackTopic, ResponseData>> {
+public class ReadyTask<BackTopic, ID, RequestData,ResponseData> {
 
     // 请求数据
-    private Request request;
+    private IRequest<BackTopic, RequestData> request;
     // 请求记录ID
     private ID id;
     // 反馈Callback
-    private Callback<BackTopic, RequestData, Request, ResponseData, Response> callback;
+    private Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback;
 
     public static <BackTopic, ID,
-            RequestData, Request extends BaseRequest<BackTopic, RequestData>,
-            ResponseData, Response extends BaseResponse<BackTopic, ResponseData>>
-    ReadyTask<BackTopic, ID, RequestData, Request, ResponseData, Response> build(ID id, Request request,
-          Callback<BackTopic, RequestData, Request, ResponseData, Response> callback) {
-        ReadyTask<BackTopic, ID, RequestData, Request, ResponseData, Response> task = new ReadyTask<>();
+            RequestData, Request extends IRequest<BackTopic, RequestData>,
+            ResponseData>
+    ReadyTask<BackTopic, ID, RequestData,ResponseData> build(ID id, Request request,
+                                                Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback) {
+        ReadyTask<BackTopic, ID, RequestData,ResponseData> task = new ReadyTask<>();
         task.request = request;
         task.id = id;
         task.callback = callback;
@@ -31,11 +29,11 @@ public class ReadyTask<BackTopic, ID,
     }
 
 
-    public Request getRequest() {
+    public IRequest<BackTopic, RequestData> getRequest() {
         return request;
     }
 
-    public Callback<BackTopic, RequestData, Request, ResponseData, Response> getCallback() {
+    public Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> getCallback() {
         return callback;
     }
 

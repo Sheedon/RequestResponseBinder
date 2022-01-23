@@ -1,4 +1,6 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.dispatcher.model;
+
+import org.sheedon.rr.core.IRequest;
 
 import java.util.Objects;
 
@@ -10,7 +12,7 @@ import java.util.Objects;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:16 下午
  */
-public abstract class BaseRequestBuilder<BackTopic, Data> {
+public abstract class BaseRequestBuilder<BackTopic, Data> implements IRequest<BackTopic, Data> {
 
     // 反馈绑定主题
     private BackTopic backTopic;
@@ -19,26 +21,29 @@ public abstract class BaseRequestBuilder<BackTopic, Data> {
     // 请求数据
     private Data body;
 
-    public BackTopic getBackTopic() {
-        return backTopic;
-    }
-
-    public long getDelayMilliSecond() {
-        return delayMilliSecond;
-    }
-
-    public Data getBody() {
-        return body;
-    }
-
     public BaseRequestBuilder() {
 
     }
 
     public <Request extends BaseRequest<BackTopic, Data>> BaseRequestBuilder(Request request) {
-        this.backTopic = request.getBackTopic();
-        this.delayMilliSecond = request.getDelayMilliSecond();
-        this.body = request.getBody();
+        this.backTopic = request.backTopic();
+        this.delayMilliSecond = request.delayMilliSecond();
+        this.body = request.body();
+    }
+
+    @Override
+    public BackTopic backTopic() {
+        return backTopic;
+    }
+
+    @Override
+    public long delayMilliSecond() {
+        return delayMilliSecond;
+    }
+
+    @Override
+    public Data body() {
+        return body;
     }
 
     /**
@@ -101,5 +106,4 @@ public abstract class BaseRequestBuilder<BackTopic, Data> {
     public <Request extends BaseRequest<BackTopic, Data>> Request build() {
         return (Request) new BaseRequest<>(this);
     }
-
 }

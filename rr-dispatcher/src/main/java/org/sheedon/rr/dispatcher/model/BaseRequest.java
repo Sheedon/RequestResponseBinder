@@ -1,4 +1,6 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.dispatcher.model;
+
+import org.sheedon.rr.core.IRequest;
 
 /**
  * 基础请求类，为了关联请求与响应的数据，必要「反馈主题」内容。
@@ -12,7 +14,7 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:06 下午
  */
-public class BaseRequest<BackTopic, Data> {
+public class BaseRequest<BackTopic, Data> implements IRequest<BackTopic, Data> {
 
     // 反馈绑定主题
     private final BackTopic backTopic;
@@ -23,20 +25,23 @@ public class BaseRequest<BackTopic, Data> {
 
     protected <RequestBuilder extends BaseRequestBuilder<BackTopic, Data>>
     BaseRequest(RequestBuilder builder) {
-        this.backTopic = builder.getBackTopic();
-        this.delayMilliSecond = builder.getDelayMilliSecond();
-        this.body = builder.getBody();
+        this.backTopic = builder.backTopic();
+        this.delayMilliSecond = builder.delayMilliSecond();
+        this.body = builder.body();
     }
 
-    public BackTopic getBackTopic() {
+    @Override
+    public BackTopic backTopic() {
         return backTopic;
     }
 
-    public long getDelayMilliSecond() {
+    @Override
+    public long delayMilliSecond() {
         return delayMilliSecond;
     }
 
-    public Data getBody() {
+    @Override
+    public Data body() {
         return body;
     }
 }

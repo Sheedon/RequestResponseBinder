@@ -1,4 +1,6 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.dispatcher.model;
+
+import org.sheedon.rr.core.IResponse;
 
 import java.util.Objects;
 
@@ -10,28 +12,35 @@ import java.util.Objects;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:54 下午
  */
-public abstract class BaseResponseBuilder<BackTopic, Data> {
+public abstract class BaseResponseBuilder<BackTopic, Data> implements IResponse<BackTopic, Data> {
 
     // 反馈绑定主题
     private BackTopic backTopic;
     // 请求数据
     private Data body;
 
-    public BackTopic getBackTopic() {
-        return backTopic;
-    }
-
-    public Data getBody() {
-        return body;
-    }
-
     public BaseResponseBuilder() {
 
     }
 
-    public <Response extends BaseResponse<BackTopic, Data>> BaseResponseBuilder(Response request) {
-        this.backTopic = request.getBackTopic();
-        this.body = request.getBody();
+    public <Response extends BaseResponse<BackTopic, Data>> BaseResponseBuilder(Response response) {
+        this.backTopic = response.backTopic();
+        this.body = response.body();
+    }
+
+    @Override
+    public BackTopic backTopic() {
+        return backTopic;
+    }
+
+    @Override
+    public String message() {
+        return null;
+    }
+
+    @Override
+    public Data body() {
+        return body;
     }
 
     /**

@@ -3,6 +3,8 @@ package org.sheedon.requestresponsebinder.model;
 import org.sheedon.requestresponsebinder.TestMessage;
 import org.sheedon.requestresponsebinder.client.BinderClient;
 import org.sheedon.rr.core.Callback;
+import org.sheedon.rr.core.IRequest;
+import org.sheedon.rr.core.IResponse;
 import org.sheedon.rr.dispatcher.RealObservable;
 
 /**
@@ -14,20 +16,27 @@ import org.sheedon.rr.dispatcher.RealObservable;
  */
 public class RealObserverWrapper implements Observable {
 
-    private final RealObservable<String, String, String, Request, TestMessage, Response> observable;
+    private final RealObservable<String, String, String, TestMessage> observable;
 
-    public RealObserverWrapper(RealObservable<String, String, String, Request, TestMessage, Response> observable) {
+    public RealObserverWrapper(RealObservable<String, String, String, TestMessage> observable) {
         this.observable = observable;
     }
 
     public static Observable newRealObservable(BinderClient client, Request request) {
-        RealObservable<String, String, String, Request, TestMessage, Response> realObservable = RealObservable.newRealObservable(client, request);
+        RealObservable<String, String, String, TestMessage> realObservable = RealObservable.newRealObservable(client, request);
         return new RealObserverWrapper(realObservable);
     }
 
     @Override
-    public void subscribe(Callback<String, String, Request, TestMessage, Response> callback) {
+    public <RRCallback extends Callback<IRequest<String, String>, IResponse<String, TestMessage>>> void subscribe(RRCallback callback) {
         observable.subscribe(callback);
+    }
+
+    @SuppressWarnings("RedundantSuppression")
+    @Override
+    public void subscribe(org.sheedon.requestresponsebinder.model.Callback callback) {
+        //noinspection unchecked,rawtypes
+        observable.subscribe((Callback) callback);
     }
 
     @Override

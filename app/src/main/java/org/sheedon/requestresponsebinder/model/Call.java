@@ -9,6 +9,7 @@ import org.sheedon.requestresponsebinder.TestMessage;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/15 3:54 下午
  */
-public interface Call extends org.sheedon.rr.core.Call<String, String, Request, TestMessage, Response> {
-    
+public interface Call extends org.sheedon.rr.core.Call<String, String, TestMessage> {
+
+    void enqueue(Callback callback);
 }

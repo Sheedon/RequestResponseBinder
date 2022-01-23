@@ -8,6 +8,7 @@ import org.sheedon.requestresponsebinder.model.RealCallWrapper;
 import org.sheedon.requestresponsebinder.model.RealObserverWrapper;
 import org.sheedon.requestresponsebinder.model.Request;
 import org.sheedon.requestresponsebinder.model.Response;
+import org.sheedon.rr.core.IRequest;
 import org.sheedon.rr.core.RequestAdapter;
 import org.sheedon.rr.core.ResponseAdapter;
 import org.sheedon.rr.dispatcher.AbstractClient;
@@ -25,7 +26,7 @@ import java.util.Objects;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/14 9:21 下午
  */
-public class BinderClient extends AbstractClient<String, String, String, Request, TestMessage, Response> {
+public class BinderClient extends AbstractClient<String, String, String, TestMessage> {
 
     protected BinderClient(Builder builder) {
         super(builder);
@@ -36,13 +37,13 @@ public class BinderClient extends AbstractClient<String, String, String, Request
     }
 
     @Override
-    public Call newCall(Request request) {
-        return RealCallWrapper.newCall(this, request);
+    public Call newCall(IRequest<String, String> request) {
+        return RealCallWrapper.newCall(this, (Request) request);
     }
 
     @Override
-    public Observable newObservable(Request request) {
-        return RealObserverWrapper.newRealObservable(this, request);
+    public Observable newObservable(IRequest<String, String> request) {
+        return RealObserverWrapper.newRealObservable(this, (Request) request);
     }
 
     public static class TestRequestAdapter implements RequestAdapter<String> {
@@ -72,7 +73,7 @@ public class BinderClient extends AbstractClient<String, String, String, Request
         }
     }
 
-    public static class TestResponseAdapter implements ResponseAdapter<String, TestMessage, Response> {
+    public static class TestResponseAdapter implements ResponseAdapter<String, TestMessage> {
 
         public TestResponseAdapter() {
         }
@@ -90,7 +91,7 @@ public class BinderClient extends AbstractClient<String, String, String, Request
     }
 
 
-    public static class Builder extends AbstractClient.Builder<String, String, String, Request, TestMessage, Response> {
+    public static class Builder extends AbstractClient.Builder<String, String, String, TestMessage> {
         // 各种其他客户端的配置
         // 例如客户端需要配置监听内容，重连机制等等
 

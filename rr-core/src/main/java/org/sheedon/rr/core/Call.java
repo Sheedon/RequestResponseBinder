@@ -7,16 +7,14 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 4:22 下午
  */
-public interface Call<BackTopic,
-        RequestData, Request extends BaseRequest<BackTopic, RequestData>,
-        ResponseData, Response extends BaseResponse<BackTopic, ResponseData>> {
+public interface Call<BackTopic, RequestData, ResponseData> {
 
     /**
      * 请求入队，指代于需要将请求和反馈绑定的任务
      *
      * @param callback 反馈内容
      */
-    <RRCallback extends Callback<BackTopic, RequestData, Request, ResponseData, Response>>
+    <RRCallback extends Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>>
     void enqueue(RRCallback callback);
 
     /**

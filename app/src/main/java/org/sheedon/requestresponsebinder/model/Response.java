@@ -1,8 +1,8 @@
 package org.sheedon.requestresponsebinder.model;
 
 import org.sheedon.requestresponsebinder.TestMessage;
-import org.sheedon.rr.core.BaseResponse;
-import org.sheedon.rr.core.BaseResponseBuilder;
+import org.sheedon.rr.dispatcher.model.BaseResponse;
+import org.sheedon.rr.dispatcher.model.BaseResponseBuilder;
 
 /**
  * java类作用描述
@@ -12,9 +12,6 @@ import org.sheedon.rr.core.BaseResponseBuilder;
  * @Date: 2022/1/15 11:21 上午
  */
 public class Response extends BaseResponse<String, TestMessage> {
-    protected Response(ResponseBuilder builder) {
-        super(builder);
-    }
 
     private Response() {
         super();
@@ -26,7 +23,6 @@ public class Response extends BaseResponse<String, TestMessage> {
         response.setBody(message);
         return response;
     }
-
 
     public static class ResponseBuilder extends BaseResponseBuilder<String, TestMessage> {
 
@@ -46,9 +42,9 @@ public class Response extends BaseResponse<String, TestMessage> {
     @Override
     public String toString() {
         return "BaseResponse{" +
-                "backTopic=" + getBackTopic() +
-                ", message='" + getMessage() + '\'' +
-                ", body=" + getBody() +
+                "backTopic=" + backTopic() +
+                ", message='" + message() + '\'' +
+                ", body=" + body() +
                 '}';
     }
 

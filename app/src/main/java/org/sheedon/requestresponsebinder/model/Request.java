@@ -1,7 +1,8 @@
 package org.sheedon.requestresponsebinder.model;
 
-import org.sheedon.rr.core.BaseRequest;
-import org.sheedon.rr.core.BaseRequestBuilder;
+import org.sheedon.rr.dispatcher.model.BaseRequest;
+import org.sheedon.rr.dispatcher.model.BaseRequestBuilder;
+import org.sheedon.rr.core.IRequest;
 
 /**
  * java类作用描述
@@ -15,7 +16,6 @@ public class Request extends BaseRequest<String, String> {
     protected Request(RequestBuilder builder) {
         super(builder);
     }
-
 
     public static class RequestBuilder extends BaseRequestBuilder<String, String> {
 
@@ -35,9 +35,9 @@ public class Request extends BaseRequest<String, String> {
     @Override
     public String toString() {
         return "BaseRequest{" +
-                "backTopic=" + getBackTopic() +
-                ", delayMilliSecond=" + getDelayMilliSecond() +
-                ", body=" + getBody() +
+                "backTopic=" + backTopic() +
+                ", delayMilliSecond=" + delayMilliSecond() +
+                ", body=" + body() +
                 '}';
     }
 }
