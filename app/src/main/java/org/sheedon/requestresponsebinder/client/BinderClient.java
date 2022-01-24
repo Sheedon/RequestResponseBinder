@@ -24,17 +24,31 @@ import java.util.Objects;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/14 9:21 下午
  */
-public class BinderClient extends AbstractClient<String, String, String, TestMessage> {
+public class BinderClient extends AbstractClient<String /*反馈主题*/,
+        String /*消息ID*/,
+        String /*请求格式*/,
+        TestMessage /*反馈格式*/> {
 
     protected BinderClient(Builder builder) {
         super(builder);
     }
 
+    /**
+     * 创建请求响应的Call
+     *
+     * @param request 请求对象
+     * @return Call 用于执行入队/提交请求的动作
+     */
     @Override
     public Call newCall(IRequest<String, String> request) {
         return RealCallWrapper.newCall(this, (Request) request);
     }
 
+    /**
+     * 创建信息的观察者 Observable
+     * @param request 请求对象
+     * @return Observable 订阅某个主题，监听该主题的消息
+     */
     @Override
     public Observable newObservable(IRequest<String, String> request) {
         return RealObserverWrapper.newRealObservable(this, (Request) request);
