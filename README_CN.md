@@ -31,8 +31,8 @@ allprojects {
 dependencies {
     // 调度库
     implementation 'com.github.Sheedon.RequestResponseBinder:rr-dispatcher:0.1-alpha'
-  	// android 环境下的超时处理者，java环境下正在开发中
-  	implementation 'com.github.Sheedon.RequestResponseBinder:rr-timeout-android:0.1-alpha'
+    // android 环境下的超时处理者，java环境下正在开发中
+    implementation 'com.github.Sheedon.RequestResponseBinder:rr-timeout-android:0.1-alpha'
 }
 ```
 
