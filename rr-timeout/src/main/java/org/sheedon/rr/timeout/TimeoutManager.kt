@@ -1,4 +1,4 @@
-package org.sheedon.rr.timeout;
+package org.sheedon.rr.timeout
 
 /**
  * 超时管理者职责，
@@ -8,12 +8,13 @@ package org.sheedon.rr.timeout;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 6:08 下午
  */
-public abstract class TimeoutManager<T> {
+abstract class TimeoutManager<T> {
 
-    protected OnTimeOutListener<T> listener;
-
-    public void setListener(OnTimeOutListener<T> listener) {
-        this.listener = listener;
+    @JvmField
+    protected var listener: OnTimeOutListener<T>? = null
+    @JvmName("setTimeOutListener")
+    fun setListener(listener:OnTimeOutListener<T>){
+        this.listener = listener
     }
 
     /**
@@ -21,17 +22,17 @@ public abstract class TimeoutManager<T> {
      *
      * @param event 超时事件
      */
-    public abstract void addEvent(DelayEvent<T> event);
+    abstract fun addEvent(event: DelayEvent<T>)
 
     /**
      * 移除超时事件
      *
      * @param id 事件ID
      */
-    public abstract void removeEvent(T id);
+    abstract fun removeEvent(id: T)
 
     /**
      * 销毁
      */
-    public abstract void destroy();
+    abstract fun destroy()
 }

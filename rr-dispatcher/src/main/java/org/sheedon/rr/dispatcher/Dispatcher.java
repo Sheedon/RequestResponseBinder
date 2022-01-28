@@ -52,7 +52,7 @@ public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
         dispatchAdapter.bindCallListener(this);
         this.responseAdapter = responseAdapter;
 
-        this.timeoutManager.setListener(new TimeOutListener());
+        this.timeoutManager.setTimeOutListener(new TimeOutListener());
     }
 
     @Override

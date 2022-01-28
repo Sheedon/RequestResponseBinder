@@ -1,7 +1,6 @@
-package org.sheedon.rr.timeout;
+package org.sheedon.rr.timeout
 
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*
 
 /**
  * ResourceBundle 工具类
@@ -10,14 +9,14 @@ import java.util.ResourceBundle;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/9 9:22 下午
  */
-public class ResourceBundleUtils {
-
+object ResourceBundleUtils {
     /**
      * 获取资源文字
      */
-    public static String getResourceString(String baseName, String key) {
-        Locale locale = Locale.getDefault();
-        ResourceBundle my = ResourceBundle.getBundle(baseName, locale);
-        return my.getString(key);
+    @JvmStatic
+    fun getResourceString(baseName: String, key: String): String {
+        val locale = Locale.getDefault()
+        val my = ResourceBundle.getBundle(baseName, locale)
+        return my.getString(key)
     }
 }

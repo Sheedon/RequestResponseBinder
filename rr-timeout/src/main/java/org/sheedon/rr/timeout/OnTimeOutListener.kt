@@ -1,6 +1,6 @@
-package org.sheedon.rr.timeout;
+package org.sheedon.rr.timeout
 
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.TimeoutException
 
 /**
  * 超时监听者，反馈超时信息的ID
@@ -9,13 +9,11 @@ import java.util.concurrent.TimeoutException;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 6:11 下午
  */
-public interface OnTimeOutListener<T> {
-
+interface OnTimeOutListener<T> {
     /**
      * 超时消息
      *
      * @param id 超时消息ID
      */
-    void onTimeOut(T id, TimeoutException e);
-
+    fun onTimeOut(id: T, e: TimeoutException?)
 }
