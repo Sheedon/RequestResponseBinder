@@ -23,7 +23,7 @@ public class RealCallWrapper implements Call {
     }
 
     public static Call newCall(BinderClient client, Request request) {
-        RealCall<String, String, String, TestMessage> realCall = RealCall.newRealCall(client, request);
+        RealCall<String, String, String, TestMessage> realCall = new RealCall(client, request);
         return new RealCallWrapper(realCall);
     }
 

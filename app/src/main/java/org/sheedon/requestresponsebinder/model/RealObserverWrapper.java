@@ -1,5 +1,7 @@
 package org.sheedon.requestresponsebinder.model;
 
+import androidx.annotation.NonNull;
+
 import org.sheedon.requestresponsebinder.TestMessage;
 import org.sheedon.requestresponsebinder.client.BinderClient;
 import org.sheedon.rr.core.Callback;
@@ -23,12 +25,12 @@ public class RealObserverWrapper implements Observable {
     }
 
     public static Observable newRealObservable(BinderClient client, Request request) {
-        RealObservable<String, String, String, TestMessage> realObservable = RealObservable.newRealObservable(client, request);
+        RealObservable<String, String, String, TestMessage> realObservable = new RealObservable<>(client, request);
         return new RealObserverWrapper(realObservable);
     }
 
     @Override
-    public <RRCallback extends Callback<IRequest<String, String>, IResponse<String, TestMessage>>> void subscribe(RRCallback callback) {
+    public <RRCallback extends Callback<IRequest<String, String>, IResponse<String, TestMessage>>> void subscribe(@NonNull RRCallback callback) {
         observable.subscribe(callback);
     }
 

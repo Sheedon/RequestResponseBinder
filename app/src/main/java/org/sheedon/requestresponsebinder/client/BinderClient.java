@@ -84,20 +84,8 @@ public class BinderClient extends AbstractClient<String /*反馈主题*/,
             return this;
         }
 
-        /**
-         * 创建客户端
-         *
-         * @return BinderClient
-         */
-        @SuppressWarnings("unchecked")
         @Override
-        protected BinderClient builder() {
-            return new BinderClient(this);
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public BinderClient build() {
+        protected void checkAndBind() {
             if (behaviorServices.isEmpty()) {
                 behaviorServices.add(new DefaultEventBehaviorService());
             }
@@ -113,11 +101,17 @@ public class BinderClient extends AbstractClient<String /*反馈主题*/,
             if (responseAdapter == null) {
                 responseAdapter = new TestResponseAdapter();
             }
-            if (dispatcher == null) {
-                dispatcher = new Dispatcher<>(behaviorServices, eventManagerPool,
-                        timeoutManager, dispatchAdapter, responseAdapter);
-            }
-            return builder();
+        }
+
+        /**
+         * 创建客户端
+         *
+         * @return BinderClient
+         */
+        @SuppressWarnings("unchecked")
+        @Override
+        protected BinderClient builder() {
+            return new BinderClient(this);
         }
     }
 
