@@ -10,7 +10,7 @@ package org.sheedon.rr.core
  */
 interface DispatchAdapter<RequestData, ResponseData> {
 
-    fun loadRequestAdapter(): RequestAdapter<RequestData>?
+    fun loadRequestAdapter(): RequestAdapter<RequestData>
 
     fun bindCallListener(listener: OnCallListener<ResponseData>?)
 

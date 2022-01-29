@@ -1,21 +1,11 @@
-package org.sheedon.rr.dispatcher;
+package org.sheedon.rr.dispatcher
 
-import org.sheedon.rr.core.Callback;
-import org.sheedon.rr.core.DispatchAdapter;
-import org.sheedon.rr.core.DispatchManager;
-import org.sheedon.rr.core.EventBehavior;
-import org.sheedon.rr.core.EventManager;
-import org.sheedon.rr.core.IRequest;
-import org.sheedon.rr.core.IResponse;
-import org.sheedon.rr.core.ReadyTask;
-import org.sheedon.rr.core.RequestAdapter;
-import org.sheedon.rr.core.ResponseAdapter;
-import org.sheedon.rr.timeout.DelayEvent;
-import org.sheedon.rr.timeout.OnTimeOutListener;
-import org.sheedon.rr.timeout.TimeoutManager;
+import org.sheedon.rr.core.*
 
-import java.util.List;
-import java.util.concurrent.TimeoutException;
+import org.sheedon.rr.timeout.TimeoutManager
+import org.sheedon.rr.core.DispatchAdapter.OnCallListener
+import org.sheedon.rr.timeout.OnTimeOutListener
+import java.util.concurrent.TimeoutException
 
 /**
  * 请求响应调度者
@@ -24,68 +14,55 @@ import java.util.concurrent.TimeoutException;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 9:36 下午
  */
-public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
-        implements DispatchManager<BackTopic, RequestData, ResponseData>,
-        DispatchAdapter.OnCallListener<ResponseData> {
+class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
+    private val behaviorServices: List<EventBehavior>,// 事件行为服务，将任务放入服务中去执行
+    private val eventManagerPool: List<EventManager<BackTopic, ID, RequestData, ResponseData>>,// 事件管理者-事件池
+    private val timeoutManager: TimeoutManager<ID>,// 请求超时管理者
+    dispatchAdapter: DispatchAdapter<RequestData, ResponseData>,// 调度适配器（请求适配器+反馈监听器）
+    private val responseAdapter: ResponseAdapter<BackTopic, ResponseData>// 结果适配器
+) : DispatchManager<BackTopic, RequestData, ResponseData>, OnCallListener<ResponseData> {
 
-
-    // 事件行为服务，将任务放入服务中去执行
-    private final List<EventBehavior> behaviorServices;
-    // 事件池
-    private final List<EventManager<BackTopic, ID, RequestData, ResponseData>> eventManagerPool;
-    // 超时处理者
-    private final TimeoutManager<ID> timeoutManager;
     // 请求适配器
-    private final RequestAdapter<RequestData> requestAdapter;
-    // 响应适配器
-    private final ResponseAdapter<BackTopic, ResponseData> responseAdapter;
+    private val requestAdapter: RequestAdapter<RequestData> = dispatchAdapter.loadRequestAdapter()
 
-    public Dispatcher(List<EventBehavior> behaviorServices,
-                      List<EventManager<BackTopic, ID, RequestData, ResponseData>> eventManagerPool,
-                      TimeoutManager<ID> timeoutManager,
-                      DispatchAdapter<RequestData, ResponseData> dispatchAdapter,
-                      ResponseAdapter<BackTopic, ResponseData> responseAdapter) {
-        this.behaviorServices = behaviorServices;
-        this.eventManagerPool = eventManagerPool;
-        this.timeoutManager = timeoutManager;
-        this.requestAdapter = dispatchAdapter.loadRequestAdapter();
-        dispatchAdapter.bindCallListener(this);
-        this.responseAdapter = responseAdapter;
-
-        this.timeoutManager.setTimeOutListener(new TimeOutListener());
+    init {
+        dispatchAdapter.bindCallListener(this)
+        this.timeoutManager.setListener(TimeOutListener())
     }
 
-    @Override
-    public RequestAdapter<RequestData> requestAdapter() {
-        return requestAdapter;
+    override fun requestAdapter(): RequestAdapter<RequestData> {
+        return requestAdapter
     }
 
-    @Override
-    public void enqueueRequest(Runnable runnable) {
-        for (EventBehavior service : behaviorServices) {
+    override fun enqueueRequest(runnable: Runnable) {
+        for (service in behaviorServices) {
             if (service.enqueueRequestEvent(runnable)) {
-                return;
+                return
             }
         }
     }
 
-    @Override
-    public void addBinder(IRequest<BackTopic, RequestData> request, Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback) {
-        for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
-            DelayEvent<ID> event = manager.push(request, callback);
+    override fun addBinder(
+        request: IRequest<BackTopic, RequestData>,
+        callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
+    ) {
+        for (manager in eventManagerPool) {
+            val event = manager.push(request, callback)
             if (event != null) {
-                timeoutManager.addEvent(event);
-                return;
+                timeoutManager.addEvent(event)
+                return
             }
         }
     }
 
-    @Override
-    public void addObservable(IRequest<BackTopic, RequestData> request, Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback) {
-        for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
-            boolean subscribed = manager.subscribe(request.backTopic(), callback);
+    override fun addObservable(
+        request: IRequest<BackTopic, RequestData>,
+        callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
+    ) {
+        for (manager in eventManagerPool) {
+            val subscribed = manager.subscribe(request.backTopic(), callback)
             if (subscribed) {
-                return;
+                return
             }
         }
     }
@@ -93,15 +70,13 @@ public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
     /**
      * 执行响应反馈操作
      *
-     * @param result ResponseData
+     * @param message ResponseData
      */
-    @Override
-    public void callResponse(final ResponseData result) {
-        enqueueResponse(() -> {
-            IResponse<BackTopic, ResponseData> response = responseAdapter.buildResponse(result);
-            onResponse(response);
-        });
-
+    override fun callResponse(message: ResponseData) {
+        enqueueResponse {
+            val response: IResponse<BackTopic, ResponseData> = responseAdapter.buildResponse(message)
+            onResponse(response)
+        }
     }
 
     /**
@@ -109,26 +84,25 @@ public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
      *
      * @param runnable 反馈的Runnable
      */
-    private void enqueueResponse(Runnable runnable) {
-        for (EventBehavior service : behaviorServices) {
+    private fun enqueueResponse(runnable: Runnable) {
+        for (service in behaviorServices) {
             if (service.enqueueCallbackEvent(runnable)) {
-                return;
+                return
             }
         }
     }
 
-    @Override
-    public void onResponse(IResponse<BackTopic, ResponseData> response) {
-        BackTopic backTopic = response.backTopic();
-        for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
-            ReadyTask<BackTopic, ID, RequestData, ResponseData> task = manager.popByTopic(backTopic);
+    override fun onResponse(response: IResponse<BackTopic, ResponseData>) {
+        val backTopic = response.backTopic()
+        for (manager in eventManagerPool) {
+            val task = manager.popByTopic(backTopic)
             if (task != null) {
-                timeoutManager.removeEvent(task.getId());
-                IRequest<BackTopic, RequestData> request = task.getRequest();
-                Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback
-                        = task.getCallback();
-                callback.onResponse(request, response);
-                return;
+                timeoutManager.removeEvent(task.id!!)
+                val request = task.request
+                val callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>? =
+                    task.callback
+                callback?.onResponse(request!!, response)
+                return
             }
         }
     }
@@ -136,26 +110,22 @@ public class Dispatcher<BackTopic, ID, RequestData, ResponseData>
     /**
      * 超时监听器
      */
-    private class TimeOutListener implements OnTimeOutListener<ID> {
-
-        @Override
-        public void onTimeOut(ID id, TimeoutException e) {
-            for (EventManager<BackTopic, ID, RequestData, ResponseData> manager : eventManagerPool) {
-                ReadyTask<BackTopic, ID, RequestData, ResponseData> task = manager.popById(id);
+    private inner class TimeOutListener : OnTimeOutListener<ID> {
+        override fun onTimeOut(id: ID, e: TimeoutException?) {
+            for (manager in eventManagerPool) {
+                val task = manager.popById(id)
                 if (task != null) {
-                    timeoutManager.removeEvent(task.getId());
-                    IRequest<BackTopic, RequestData> request = task.getRequest();
-                    Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback
-                            = task.getCallback();
-                    BackTopic topic = task.getRequest().backTopic();
-                    IResponse<BackTopic, ResponseData> failureResponse
-                            = responseAdapter.buildFailure(topic, e.getMessage());
-                    callback.onResponse(request, failureResponse);
-                    return;
+                    timeoutManager.removeEvent(task.id!!)
+                    val request = task.request
+                    val callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>? =
+                        task.callback
+                    val topic = task.request!!.backTopic()
+                    val failureResponse: IResponse<BackTopic, ResponseData> =
+                        responseAdapter.buildFailure(topic, e!!.message!!)
+                    callback?.onResponse(request!!, failureResponse)
+                    return
                 }
             }
         }
     }
-
-
 }

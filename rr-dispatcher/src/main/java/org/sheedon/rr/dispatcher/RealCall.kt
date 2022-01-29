@@ -1,15 +1,9 @@
-package org.sheedon.rr.dispatcher;
+package org.sheedon.rr.dispatcher
 
-import org.sheedon.rr.core.Call;
-import org.sheedon.rr.core.Callback;
-import org.sheedon.rr.core.DispatchManager;
-import org.sheedon.rr.core.IRequest;
-import org.sheedon.rr.core.IResponse;
-import org.sheedon.rr.core.NamedRunnable;
-import org.sheedon.rr.core.RequestAdapter;
-import org.sheedon.rr.dispatcher.model.BaseResponse;
-import org.sheedon.rr.timeout.ResourceBundleUtils;
-
+import org.sheedon.rr.core.*
+import org.sheedon.rr.timeout.ResourceBundleUtils.getResourceString
+import org.sheedon.rr.dispatcher.model.BaseResponse
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * 真实Call
@@ -18,108 +12,72 @@ import org.sheedon.rr.timeout.ResourceBundleUtils;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/9 5:09 下午
  */
-public class RealCall<BackTopic, ID, RequestData, ResponseData>
-        implements Call<BackTopic, RequestData, ResponseData> {
-
-    private static final String BASENAME = "dispatcher";
-    private static final String DISPATCHER_KEY = "request_error";
-
-    private final AbstractClient<BackTopic, ID, RequestData, ResponseData> client;
+class RealCall<BackTopic, ID, RequestData, ResponseData>(
+    private val client: AbstractClient<BackTopic, ID, RequestData, ResponseData>,
     // 请求对象
-    private final IRequest<BackTopic, RequestData> originalRequest;
+    private val originalRequest: IRequest<BackTopic, RequestData>
+) : Call<BackTopic, RequestData, ResponseData> {
+
     // 是否执行取消操作
-    private boolean canceled = false;
+    @Volatile
+    private var canceled = false
+    override var isCanceled: Boolean = canceled
+
     // 是否执行完成
-    private boolean executed = false;
+    private val executed = AtomicBoolean()
 
-    protected RealCall(AbstractClient<BackTopic, ID, RequestData, ResponseData> client,
-                       IRequest<BackTopic, RequestData> request) {
-        this.client = client;
-        this.originalRequest = request;
+    override val isExecuted: Boolean
+        get() = executed.get()
+
+    companion object {
+        private const val BASENAME = "dispatcher"
+        private const val DISPATCHER_KEY = "request_error"
     }
 
-    /**
-     * 新增反馈类
-     */
-    public static <BackTopic, ID, RequestData, ResponseData>
-    RealCall<BackTopic, ID, RequestData, ResponseData>
-    newRealCall(AbstractClient<BackTopic, ID, RequestData, ResponseData> client,
-                IRequest<BackTopic, RequestData> originalRequest) {
-        // Safely publish the Call instance to the EventListener.
-        //        call.eventListener = client.eventListenerFactory().create(call);
-        return new RealCall<>(client, originalRequest);
+    override fun <RRCallback : Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?> enqueue(
+        callback: RRCallback
+    ) {
+        check(executed.compareAndSet(false, true)) { "Already Executed" }
+
+        val manager = client.dispatchManager
+        manager.enqueueRequest(AsyncCall(client, originalRequest, callback))
     }
 
-    @Override
-    public <RRCallback extends Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>>
-    void enqueue(RRCallback callback) {
-        synchronized (this) {
-            if (executed) throw new IllegalStateException("Already Executed");
-            executed = true;
-        }
-        DispatchManager<BackTopic, RequestData, ResponseData> manager = client.getDispatchManager();
-        manager.enqueueRequest(new AsyncCall(client, originalRequest, callback));
+    override fun publish() {
+        this.enqueue<Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?>(
+            null
+        )
     }
 
-    @Override
-    public void publish() {
-        this.enqueue(null);
+    override fun cancel() {
+        isCanceled = true
     }
 
-    @Override
-    public boolean isCanceled() {
-        return canceled;
-    }
-
-    @Override
-    public void cancel() {
-        canceled = true;
-    }
-
-    @Override
-    public boolean isExecuted() {
-        return executed;
-    }
-
-    final class AsyncCall extends NamedRunnable {
-
-        private final AbstractClient<BackTopic, ID, RequestData, ResponseData> client;
-        private final IRequest<BackTopic, RequestData> originalRequest;
-        private final Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> responseCallback;
-
-        protected AsyncCall(AbstractClient<BackTopic, ID, RequestData, ResponseData> client,
-                            IRequest<BackTopic, RequestData> originalRequest,
-                            Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> responseCallback) {
-            super("AsyncCall %s", originalRequest);
-            this.client = client;
-            this.originalRequest = originalRequest;
-            this.responseCallback = responseCallback;
-        }
-
-        @Override
-        protected void execute() {
-            if (isCanceled()) {
-                return;
+    internal inner class AsyncCall(
+        private val client: AbstractClient<BackTopic, ID, RequestData, ResponseData>,
+        private val originalRequest: IRequest<BackTopic, RequestData>,
+        private val responseCallback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
+    ) : NamedRunnable("AsyncCall %s", originalRequest) {
+        override fun execute() {
+            if (isCanceled) {
+                return
             }
-            boolean isNeedCallback = responseCallback != null;
-            DispatchManager<BackTopic, RequestData, ResponseData> manager = client.getDispatchManager();
-
-            RequestAdapter<RequestData> adapter = manager.requestAdapter();
-            RequestData body = originalRequest.body();
-            body = adapter.checkRequestData(body);
-
+            val isNeedCallback = responseCallback != null
+            val manager = client.dispatchManager
+            val adapter = manager.requestAdapter()
+            var body = originalRequest.body()
+            body = adapter!!.checkRequestData(body)
             if (isNeedCallback) {
-                manager.addBinder(originalRequest, responseCallback);
+                manager.addBinder(originalRequest, responseCallback)
             }
-
-            boolean isSuccess = adapter.publish(body);
+            val isSuccess = adapter.publish(body)
             if (!isSuccess) {
-                IResponse<BackTopic, ResponseData> response = BaseResponse.build(originalRequest.backTopic(),
-                        ResourceBundleUtils.getResourceString(BASENAME, DISPATCHER_KEY));
-                manager.onResponse(response);
+                val response: IResponse<BackTopic, ResponseData> = BaseResponse.build(
+                    originalRequest.backTopic(),
+                    getResourceString(BASENAME, DISPATCHER_KEY)
+                )
+                manager.onResponse(response)
             }
-
-
         }
     }
 }

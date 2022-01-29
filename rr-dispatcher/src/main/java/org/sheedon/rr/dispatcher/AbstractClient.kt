@@ -1,18 +1,10 @@
-package org.sheedon.rr.dispatcher;
+package org.sheedon.rr.dispatcher
 
-import org.sheedon.rr.core.Call;
-import org.sheedon.rr.core.DispatchAdapter;
-import org.sheedon.rr.core.DispatchManager;
-import org.sheedon.rr.core.EventBehavior;
-import org.sheedon.rr.core.EventManager;
-import org.sheedon.rr.core.IRequest;
-import org.sheedon.rr.core.Observable;
-import org.sheedon.rr.core.ResponseAdapter;
-import org.sheedon.rr.timeout.TimeoutManager;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import org.sheedon.rr.core.*
+import org.sheedon.rr.core.Observable
+import org.sheedon.rr.timeout.TimeoutManager
+import java.lang.NullPointerException
+import java.util.*
 
 /**
  * 抽象客户端类，需要转化的协议继承自当前类，来实现基本配置
@@ -21,188 +13,175 @@ import java.util.Objects;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/9 10:35 上午
  */
-public abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> {
+abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protected constructor(
+    builder: Builder<BackTopic, ID, RequestData, ResponseData>
+) {
+    @get:JvmName("dispatchManager")
+    val dispatchManager: DispatchManager<BackTopic, RequestData, ResponseData> =
+        builder.dispatcher!!
 
-    private final DispatchManager<BackTopic, RequestData, ResponseData> dispatcher;
-    private final int timeout;
+    @get:JvmName("timeout")
+    val timeout: Int = builder.timeout
 
-    protected AbstractClient(Builder<BackTopic, ID, RequestData, ResponseData> builder) {
-        this.dispatcher = builder.dispatcher;
-        this.timeout = builder.timeout;
+    open fun newCall(request: IRequest<BackTopic, RequestData>): Call<BackTopic, RequestData, ResponseData> {
+        return RealCall(this, request)
     }
 
-    public DispatchManager<BackTopic, RequestData, ResponseData> getDispatchManager() {
-        return dispatcher;
+    open fun newObservable(request: IRequest<BackTopic, RequestData>): Observable<BackTopic, RequestData, ResponseData>? {
+        return RealObservable(this, request)
     }
 
-    public int getTimeout() {
-        return timeout;
-    }
+    protected abstract class Builder<BackTopic, ID, RequestData, ResponseData> {
+        internal var dispatcher: DispatchManager<BackTopic, RequestData, ResponseData>? = null
+        internal var timeout = 5
 
-    public Call<BackTopic, RequestData, ResponseData>
-    newCall(IRequest<BackTopic, RequestData> request) {
-        return RealCall.newRealCall(this, request);
-    }
-
-
-    public Observable<BackTopic, RequestData, ResponseData>
-    newObservable(IRequest<BackTopic, RequestData> request) {
-        return RealObservable.newRealObservable(this, request);
-    }
-
-    protected static abstract class Builder<BackTopic, ID,
-            RequestData, ResponseData> {
-        protected DispatchManager<BackTopic, RequestData, ResponseData> dispatcher;
-        protected int timeout;
         // 职责服务执行环境
-        protected List<EventBehavior> behaviorServices = new LinkedList<>();
-        // 事件管理者集合
-        protected List<EventManager<BackTopic, ID, RequestData, ResponseData>> eventManagerPool = new LinkedList<>();
-        // 超时处理者
-        protected TimeoutManager<ID> timeoutManager;
-        // 调度适配器
-        protected DispatchAdapter<RequestData, ResponseData> dispatchAdapter;
-        // 反馈适配器
-        protected ResponseAdapter<BackTopic, ResponseData> responseAdapter;
+        @JvmField
+        protected var behaviorServices: MutableList<EventBehavior> = LinkedList()
 
-        public Builder() {
-            timeout = 5;
-        }
+        // 事件管理者集合
+        @JvmField
+        protected var eventManagerPool: MutableList<EventManager<BackTopic, ID, RequestData, ResponseData>> =
+            LinkedList()
+
+        // 超时处理者
+        @JvmField
+        protected var timeoutManager: TimeoutManager<ID>? = null
+
+        // 调度适配器
+        @JvmField
+        protected var dispatchAdapter: DispatchAdapter<RequestData, ResponseData>? = null
+
+        // 反馈适配器
+        @JvmField
+        protected var responseAdapter: ResponseAdapter<BackTopic, ResponseData>? = null
 
         /**
          * 设置用于设置策略和执行异步请求的调度程序。不能为null。
          *
          * @param dispatcher 请求响应执行者
-         * @return Builder<BackTopic, ID> 构建者
          */
-        public Builder<BackTopic, ID, RequestData, ResponseData> dispatcher(Dispatcher<BackTopic, ID, RequestData, ResponseData> dispatcher) {
-            this.dispatcher = Objects.requireNonNull(dispatcher, "dispatcher == null");
-            return this;
+        fun dispatcher(dispatcher: Dispatcher<BackTopic, ID, RequestData, ResponseData>) = apply {
+            this.dispatcher = dispatcher
         }
 
         /**
          * 设置信息请求超时时间（单位秒）
          *
          * @param timeout 超时时间
-         * @return Builder<BackTopic, ID> 构建者
+         * @return Builder<BackTopic></BackTopic>, ID> 构建者
          */
-        public Builder<BackTopic, ID, RequestData, ResponseData> messageTimeout(int timeout) {
-            if (timeout < 0)
-                return this;
-
-            this.timeout = timeout;
-            return this;
+        fun messageTimeout(timeout: Int) = apply {
+            if (timeout < 0) return this
+            this.timeout = timeout
         }
 
         /**
          * 设置行为服务环境集合
          *
          * @param behaviorServices 执行服务环境集合
-         * @return Builder<BackTopic, ID>
+         * @return Builder<BackTopic></BackTopic>, ID>
          */
-        public Builder<BackTopic, ID, RequestData, ResponseData> behaviorServices(List<EventBehavior> behaviorServices) {
-            this.behaviorServices = Objects.requireNonNull(behaviorServices, "behaviorServices == null");
-            return this;
+        fun behaviorServices(behaviorServices: MutableList<EventBehavior>) = apply {
+            this.behaviorServices = behaviorServices
         }
 
         /**
          * 设置行为线程池，后加的靠前
          *
          * @param behaviorService 执行服务环境
-         * @return Builder<BackTopic, ID>
+         * @return Builder<BackTopic></BackTopic>, ID>
          */
-        public Builder<BackTopic, ID, RequestData, ResponseData> behaviorService(EventBehavior behaviorService) {
-            EventBehavior behavior = Objects.requireNonNull(behaviorService, "behaviorService == null");
-            this.behaviorServices.add(0, behavior);
-            return this;
+        fun behaviorService(behaviorService: EventBehavior) = apply {
+            behaviorServices.add(0, behaviorService)
         }
 
         /**
          * 设置事件管理集合
          *
          * @param eventManagerPool 事件管理集合
-         * @return Builder<BackTopic, ID>
+         * @return Builder<BackTopic></BackTopic>, ID>
          */
-        public Builder<BackTopic, ID, RequestData, ResponseData>
-        eventManagerPool(List<EventManager<BackTopic, ID, RequestData, ResponseData>> eventManagerPool) {
-            this.eventManagerPool = Objects.requireNonNull(eventManagerPool, "eventManagerPool == null");
-            return this;
-        }
+        fun eventManagerPool(eventManagerPool: MutableList<EventManager<BackTopic, ID, RequestData, ResponseData>>) =
+            apply {
+                this.eventManagerPool = eventManagerPool
+            }
 
         /**
          * 设置事件管理
          *
          * @param eventManager 事件管理
-         * @return Builder<BackTopic, ID>
+         * @return Builder<BackTopic></BackTopic>, ID>
          */
-        public Builder<BackTopic, ID, RequestData, ResponseData>
-        eventManager(EventManager<BackTopic, ID, RequestData, ResponseData> eventManager) {
-            EventManager<BackTopic, ID, RequestData, ResponseData> manager = Objects.requireNonNull(eventManager, "eventManager == null");
-            this.eventManagerPool.add(0, manager);
-            return this;
-        }
+        fun eventManager(eventManager: EventManager<BackTopic, ID, RequestData, ResponseData>) =
+            apply {
+                eventManagerPool.add(0, eventManager)
+            }
 
         /**
          * 设置超时处理者
          *
          * @param timeoutManager 事件管理
-         * @return Builder<BackTopic, ID>
+         * @return Builder<BackTopic></BackTopic>, ID>
          */
-        public Builder<BackTopic, ID, RequestData, ResponseData> timeoutManager(TimeoutManager<ID> timeoutManager) {
-            this.timeoutManager = Objects.requireNonNull(timeoutManager, "timeoutManager == null");
-            return this;
+        fun timeoutManager(timeoutManager: TimeoutManager<ID>) = apply {
+            this.timeoutManager = timeoutManager
         }
 
         /**
          * 设置调度调度适配者
          *
          * @param dispatchAdapter 调度适配者
-         * @return Builder<BackTopic, ID>
+         * @return Builder<BackTopic></BackTopic>, ID>
          */
-        public Builder<BackTopic, ID, RequestData, ResponseData> dispatchAdapter(DispatchAdapter<RequestData, ResponseData> dispatchAdapter) {
-            this.dispatchAdapter = Objects.requireNonNull(dispatchAdapter, "dispatchAdapter == null");
-            if (dispatchAdapter.loadRequestAdapter() == null) {
-                throw new NullPointerException("requestAdapter == null");
-            }
-            return this;
+        fun dispatchAdapter(dispatchAdapter: DispatchAdapter<RequestData, ResponseData>) = apply {
+            requireNotNull(dispatchAdapter.loadRequestAdapter()) { "requestAdapter == null" }
+            this.dispatchAdapter = dispatchAdapter
         }
 
         /**
          * 设置响应调度适配者
          *
          * @param responseAdapter 响应调度适配者
-         * @return Builder<BackTopic, ID>
+         * @return Builder<BackTopic></BackTopic>, ID>
          */
-        public Builder<BackTopic, ID, RequestData, ResponseData>
-        responseAdapter(ResponseAdapter<BackTopic, ResponseData> responseAdapter) {
-            this.responseAdapter = Objects.requireNonNull(responseAdapter, "responseAdapter == null");
-            return this;
+        fun responseAdapter(responseAdapter: ResponseAdapter<BackTopic, ResponseData>) = apply {
+            this.responseAdapter = responseAdapter
         }
 
+        fun <Client : AbstractClient<BackTopic, ID, RequestData, ResponseData>> build(): Client {
+            checkAndBind()
+            buildDispatcher()
+            return builder()
+        }
 
-        public <Client extends AbstractClient<BackTopic, ID, RequestData, ResponseData>> Client build() {
+        protected open fun checkAndBind() {
             if (behaviorServices.isEmpty()) {
-                behaviorServices.add(new DefaultEventBehaviorService());
+                behaviorServices.add(DefaultEventBehaviorService())
             }
             if (eventManagerPool.isEmpty()) {
-                throw new NullPointerException("please eventManager(new DefaultEventManager())");
+                throw NullPointerException("please eventManager(new DefaultEventManager())")
             }
             if (timeoutManager == null) {
-                throw new NullPointerException("please add timeoutManager()");
+                throw NullPointerException("please add timeoutManager()")
             }
             if (dispatchAdapter == null) {
-                throw new NullPointerException("please add dispatchAdapter()");
+                throw NullPointerException("please add dispatchAdapter()")
             }
             if (responseAdapter == null) {
-                throw new NullPointerException("please add responseAdapter()");
+                throw NullPointerException("please add responseAdapter()")
             }
-            if (dispatcher == null) {
-                dispatcher = new Dispatcher<>(behaviorServices, eventManagerPool,
-                        timeoutManager, dispatchAdapter, responseAdapter);
-            }
-            return builder();
         }
 
-        protected abstract <Client extends AbstractClient<BackTopic, ID, RequestData, ResponseData>> Client builder();
+        private fun buildDispatcher() {
+            if (dispatcher == null) {
+                dispatcher = Dispatcher(
+                    behaviorServices, eventManagerPool,
+                    timeoutManager!!, dispatchAdapter!!, responseAdapter!!
+                )
+            }
+        }
+
+        protected abstract fun <Client : AbstractClient<BackTopic, ID, RequestData, ResponseData>?> builder(): Client
     }
 }

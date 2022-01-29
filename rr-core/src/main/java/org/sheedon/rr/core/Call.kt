@@ -13,7 +13,7 @@ interface Call<BackTopic, RequestData, ResponseData> {
      *
      * @param callback 反馈内容
      */
-    fun <RRCallback : Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>> enqueue(
+    fun <RRCallback : Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?> enqueue(
         callback: RRCallback
     )
 

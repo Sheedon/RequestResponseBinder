@@ -26,7 +26,7 @@ class ReadyTask<BackTopic, ID, RequestData, ResponseData> {
         fun <BackTopic, ID, RequestData, Request : IRequest<BackTopic, RequestData>, ResponseData> build(
             id: ID,
             request: Request,
-            callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>
+            callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
         ): ReadyTask<BackTopic, ID, RequestData, ResponseData> {
             val task = ReadyTask<BackTopic, ID, RequestData, ResponseData>()
             task.request = request

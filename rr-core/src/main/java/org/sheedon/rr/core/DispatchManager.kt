@@ -24,7 +24,7 @@ interface DispatchManager<BackTopic, RequestData, ResponseData> {
      * @param callback 反馈监听器
      */
     fun addBinder(
-        request: IRequest<BackTopic, RequestData>?,
+        request: IRequest<BackTopic, RequestData>,
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     )
 

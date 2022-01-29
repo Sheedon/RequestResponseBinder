@@ -18,7 +18,7 @@ interface EventManager<BackTopic, ID, RequestData, ResponseData> {
      * @return DelayEvent<T>
     </T> */
     fun push(
-        request: IRequest<BackTopic, RequestData>?,
+        request: IRequest<BackTopic, RequestData>,
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ): DelayEvent<ID>?
 
