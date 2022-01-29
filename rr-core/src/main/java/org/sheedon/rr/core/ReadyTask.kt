@@ -1,4 +1,4 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.core
 
 /**
  * 准备好的任务，包含的内容请求数据和反馈Callback
@@ -7,37 +7,32 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/9 2:58 下午
  */
-public class ReadyTask<BackTopic, ID, RequestData,ResponseData> {
-
+class ReadyTask<BackTopic, ID, RequestData, ResponseData> {
     // 请求数据
-    private IRequest<BackTopic, RequestData> request;
+    var request: IRequest<BackTopic, RequestData>? = null
+        private set
+
     // 请求记录ID
-    private ID id;
+    var id: ID? = null
+        private set
+
     // 反馈Callback
-    private Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback;
+    var callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>? =
+        null
+        private set
 
-    public static <BackTopic, ID,
-            RequestData, Request extends IRequest<BackTopic, RequestData>,
-            ResponseData>
-    ReadyTask<BackTopic, ID, RequestData,ResponseData> build(ID id, Request request,
-                                                Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback) {
-        ReadyTask<BackTopic, ID, RequestData,ResponseData> task = new ReadyTask<>();
-        task.request = request;
-        task.id = id;
-        task.callback = callback;
-        return task;
-    }
-
-
-    public IRequest<BackTopic, RequestData> getRequest() {
-        return request;
-    }
-
-    public Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> getCallback() {
-        return callback;
-    }
-
-    public ID getId() {
-        return id;
+    companion object {
+        @JvmStatic
+        fun <BackTopic, ID, RequestData, Request : IRequest<BackTopic, RequestData>, ResponseData> build(
+            id: ID,
+            request: Request,
+            callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>
+        ): ReadyTask<BackTopic, ID, RequestData, ResponseData> {
+            val task = ReadyTask<BackTopic, ID, RequestData, ResponseData>()
+            task.request = request
+            task.id = id
+            task.callback = callback
+            return task
+        }
     }
 }

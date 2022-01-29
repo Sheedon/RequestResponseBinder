@@ -1,4 +1,4 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.core
 
 /**
  * 请求适配器，主要执行请求数据核实，以及提交请求数据
@@ -7,21 +7,19 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 5:10 下午
  */
-public interface RequestAdapter<Data> {
-
+interface RequestAdapter<Data> {
     /**
      * 核实请求数据，并且将处理后的请求数据返回
      *
      * @param data 请求数据
      * @return 核实组合后的请求数据
      */
-    Data checkRequestData(Data data);
+    fun checkRequestData(data: Data): Data
 
     /**
      * 提交请求的行为
      *
      * @param data 请求数据
      */
-    boolean publish(Data data);
-
+    fun publish(data: Data): Boolean
 }

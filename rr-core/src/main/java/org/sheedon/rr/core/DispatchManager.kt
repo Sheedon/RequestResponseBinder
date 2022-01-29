@@ -1,4 +1,4 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.core
 
 /**
  * 作为「请求响应模式」下，请求和反馈信息的输入。
@@ -7,16 +7,15 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:01 下午
  */
-public interface DispatchManager<BackTopic, RequestData, ResponseData> {
-
-    RequestAdapter<RequestData> requestAdapter();
+interface DispatchManager<BackTopic, RequestData, ResponseData> {
+    fun requestAdapter(): RequestAdapter<RequestData>?
 
     /**
      * 将请求行为入队，按预定策略去执行请求动作
      *
      * @param runnable 处理事件
      */
-    void enqueueRequest(Runnable runnable);
+    fun enqueueRequest(runnable: Runnable)
 
     /**
      * 添加一个请求响应关联者，用于绑定一个请求与一个响应
@@ -24,8 +23,10 @@ public interface DispatchManager<BackTopic, RequestData, ResponseData> {
      * @param request  请求数据
      * @param callback 反馈监听器
      */
-    void addBinder(IRequest<BackTopic, RequestData> request,
-                   Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback);
+    fun addBinder(
+        request: IRequest<BackTopic, RequestData>?,
+        callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
+    )
 
     /**
      * 添加一个可观察信息，用于订阅某个主题的反馈信息
@@ -33,16 +34,15 @@ public interface DispatchManager<BackTopic, RequestData, ResponseData> {
      * @param request  请求数据
      * @param callback 反馈监听器
      */
-    void addObservable(IRequest<BackTopic, RequestData> request,
-                       Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>> callback);
-
+    fun addObservable(
+        request: IRequest<BackTopic, RequestData>,
+        callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
+    )
 
     /**
      * 反馈结果监听
      *
      * @param response 反馈结果
      */
-    void onResponse(IResponse<BackTopic, ResponseData> response);
-
-
+    fun onResponse(response: IResponse<BackTopic, ResponseData>)
 }

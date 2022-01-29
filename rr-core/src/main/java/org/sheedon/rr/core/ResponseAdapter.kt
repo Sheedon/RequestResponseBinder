@@ -1,4 +1,4 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.core
 
 /**
  * 结果构造器
@@ -7,11 +7,12 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/16 3:34 下午
  */
-public interface ResponseAdapter<BackTopic, ResponseData> {
+interface ResponseAdapter<BackTopic, ResponseData> {
 
-    <Response extends IResponse<BackTopic, ResponseData>>
-    Response buildFailure(BackTopic topic, String message);
+    fun <Response : IResponse<BackTopic, ResponseData>> buildFailure(
+        topic: BackTopic,
+        message: String
+    ): Response
 
-    <Response extends IResponse<BackTopic, ResponseData>>
-    Response buildResponse(ResponseData data);
+    fun <Response : IResponse<BackTopic, ResponseData>?> buildResponse(data: ResponseData): Response
 }

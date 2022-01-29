@@ -1,4 +1,4 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.core
 
 /**
  * 内容转换器
@@ -7,6 +7,6 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 4:55 下午
  */
-public interface DataConverter<F, T> {
-    T convert(F value);
+interface DataConverter<F, T> {
+    fun convert(value: F): T
 }

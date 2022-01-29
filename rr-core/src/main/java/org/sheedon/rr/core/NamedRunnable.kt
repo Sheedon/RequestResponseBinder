@@ -1,6 +1,6 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.core
 
-import java.util.Locale;
+import java.util.*
 
 /**
  * 设置其线程名称的 Runnable 实现。
@@ -9,24 +9,19 @@ import java.util.Locale;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 4:09 下午
  */
-public abstract class NamedRunnable implements Runnable {
+abstract class NamedRunnable protected constructor(format: String, vararg args: Any?) : Runnable {
+    private val name: String = String.format(Locale.US, format, *args)
 
-    private final String name;
-
-    protected NamedRunnable(String format, Object... args) {
-        this.name = String.format(Locale.US, format, args);
-    }
-
-    @Override
-    public final void run() {
-        String oldName = Thread.currentThread().getName();
-        Thread.currentThread().setName(name);
+    override fun run() {
+        val oldName = Thread.currentThread().name
+        Thread.currentThread().name = name
         try {
-            execute();
+            execute()
         } finally {
-            Thread.currentThread().setName(oldName);
+            Thread.currentThread().name = oldName
         }
     }
 
-    protected abstract void execute();
+    protected abstract fun execute()
+
 }

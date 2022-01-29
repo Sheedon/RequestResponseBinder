@@ -1,4 +1,4 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.core
 
 /**
  * 调度适配器
@@ -8,15 +8,13 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/23 1:35 下午
  */
-public interface DispatchAdapter<RequestData, ResponseData> {
+interface DispatchAdapter<RequestData, ResponseData> {
 
-    RequestAdapter<RequestData> loadRequestAdapter();
+    fun loadRequestAdapter(): RequestAdapter<RequestData>?
 
-    void bindCallListener(OnCallListener<ResponseData> listener);
+    fun bindCallListener(listener: OnCallListener<ResponseData>?)
 
     interface OnCallListener<ResponseData> {
-
-        void callResponse(ResponseData message);
+        fun callResponse(message: ResponseData)
     }
-
 }

@@ -1,4 +1,4 @@
-package org.sheedon.rr.core;
+package org.sheedon.rr.core
 
 /**
  * 反馈主题信息
@@ -8,10 +8,9 @@ package org.sheedon.rr.core;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/22 11:32 下午
  */
-public interface IBackTopic<T> {
-
+interface IBackTopic<T> {
     /**
      * 反馈绑定主题
      */
-    T backTopic();
+    fun backTopic(): T
 }
