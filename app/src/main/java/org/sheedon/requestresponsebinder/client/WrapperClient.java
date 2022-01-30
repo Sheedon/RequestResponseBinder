@@ -71,22 +71,4 @@ public class WrapperClient implements DispatchAdapter<String, TestMessage> {
             return true;
         }
     }
-
-    @SuppressWarnings("unchecked")
-    public static class TestResponseAdapter implements ResponseAdapter<String, TestMessage> {
-
-        public TestResponseAdapter() {
-        }
-
-        @Override
-        public Response buildFailure(String topic, String message) {
-            return Response.build(topic, message);
-        }
-
-        @Override
-        public Response buildResponse(TestMessage message) {
-            return Response.build(message);
-        }
-
-    }
 }

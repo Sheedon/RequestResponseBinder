@@ -31,7 +31,7 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
         return RealObservable(this, request)
     }
 
-    protected abstract class Builder<BackTopic, ID, RequestData, ResponseData> {
+    abstract class Builder<BackTopic, ID, RequestData, ResponseData> {
         internal var dispatcher: DispatchManager<BackTopic, RequestData, ResponseData>? = null
         internal var timeout = 5
 
@@ -51,6 +51,14 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
         // 调度适配器
         @JvmField
         protected var dispatchAdapter: DispatchAdapter<RequestData, ResponseData>? = null
+
+        // 请求适配器
+        @JvmField
+        protected var requestAdapter: RequestAdapter<RequestData>? = null
+
+        // 反馈主题转换器
+        @JvmField
+        protected var backTopicConverter: DataConverter<ResponseData, BackTopic>? = null
 
         // 反馈适配器
         @JvmField
@@ -140,6 +148,26 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
         }
 
         /**
+         * 设置请求适配者
+         *
+         * @param requestAdapter 请求适配者
+         * @return Builder<BackTopic></BackTopic>, ID>
+         */
+        fun requestAdapter(requestAdapter: RequestAdapter<RequestData>) = apply {
+            this.requestAdapter = requestAdapter
+        }
+
+        /**
+         * 设置反馈主题转换器
+         *
+         * @param backTopicConverter 反馈主题转换器
+         * @return Builder<BackTopic></BackTopic>, ID>
+         */
+        fun backTopicConverter(backTopicConverter: DataConverter<ResponseData, BackTopic>) = apply {
+            this.backTopicConverter = backTopicConverter
+        }
+
+        /**
          * 设置响应调度适配者
          *
          * @param responseAdapter 响应调度适配者
@@ -168,6 +196,9 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
             if (dispatchAdapter == null) {
                 throw NullPointerException("please add dispatchAdapter()")
             }
+            if (backTopicConverter == null) {
+                throw NullPointerException("please add backTopicConverter()")
+            }
             if (responseAdapter == null) {
                 throw NullPointerException("please add responseAdapter()")
             }
@@ -177,11 +208,12 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
             if (dispatcher == null) {
                 dispatcher = Dispatcher(
                     behaviorServices, eventManagerPool,
-                    timeoutManager!!, dispatchAdapter!!, responseAdapter!!
+                    timeoutManager!!, dispatchAdapter!!,
+                    backTopicConverter!!, responseAdapter!!
                 )
             }
         }
 
-        protected abstract fun <Client : AbstractClient<BackTopic, ID, RequestData, ResponseData>?> builder(): Client
+        protected abstract fun <Client : AbstractClient<BackTopic, ID, RequestData, ResponseData>> builder(): Client
     }
 }

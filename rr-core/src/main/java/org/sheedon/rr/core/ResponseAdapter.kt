@@ -14,5 +14,8 @@ interface ResponseAdapter<BackTopic, ResponseData> {
         message: String
     ): Response
 
-    fun <Response : IResponse<BackTopic, ResponseData>?> buildResponse(data: ResponseData): Response
+    fun <Response : IResponse<BackTopic, ResponseData>> buildResponse(
+        topic: BackTopic,
+        data: ResponseData
+    ): Response
 }

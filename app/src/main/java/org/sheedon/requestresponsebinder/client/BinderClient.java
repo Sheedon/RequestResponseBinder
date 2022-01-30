@@ -7,12 +7,12 @@ import org.sheedon.requestresponsebinder.model.RealCallWrapper;
 import org.sheedon.requestresponsebinder.model.RealObserverWrapper;
 import org.sheedon.requestresponsebinder.model.Request;
 import org.sheedon.requestresponsebinder.model.Response;
+import org.sheedon.rr.core.DataConverter;
 import org.sheedon.rr.core.IRequest;
 import org.sheedon.rr.core.ResponseAdapter;
 import org.sheedon.rr.dispatcher.AbstractClient;
 import org.sheedon.rr.dispatcher.DefaultEventBehaviorService;
 import org.sheedon.rr.dispatcher.DefaultEventManager;
-import org.sheedon.rr.dispatcher.Dispatcher;
 import org.sheedon.rr.timeout.android.TimeOutHandler;
 
 import java.util.Objects;
@@ -46,6 +46,7 @@ public class BinderClient extends AbstractClient<String /*反馈主题*/,
 
     /**
      * 创建信息的观察者 Observable
+     *
      * @param request 请求对象
      * @return Observable 订阅某个主题，监听该主题的消息
      */
@@ -66,10 +67,21 @@ public class BinderClient extends AbstractClient<String /*反馈主题*/,
         }
 
         @Override
-        public Response buildResponse(TestMessage message) {
+        public Response buildResponse(String topic, TestMessage message) {
             return Response.build(message);
         }
 
+    }
+
+    public static class BackTopicDataConverter implements DataConverter<TestMessage, String> {
+
+        public BackTopicDataConverter() {
+        }
+
+        @Override
+        public String convert(TestMessage value) {
+            return "test";
+        }
     }
 
 
@@ -97,6 +109,9 @@ public class BinderClient extends AbstractClient<String /*反馈主题*/,
             }
             if (dispatchAdapter == null) {
                 dispatchAdapter = new WrapperClient(baseUrl);
+            }
+            if (backTopicConverter == null) {
+                backTopicConverter = new BackTopicDataConverter();
             }
             if (responseAdapter == null) {
                 responseAdapter = new TestResponseAdapter();
