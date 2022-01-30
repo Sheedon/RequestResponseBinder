@@ -61,7 +61,7 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ) {
         for (manager in eventManagerPool) {
-            val subscribed = manager.subscribe(request.backTopic(), callback)
+            val subscribed = manager.subscribe(request, callback)
             if (subscribed) {
                 return
             }
@@ -98,6 +98,9 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
     override fun onResponse(response: IResponse<BackTopic, ResponseData>) {
         val backTopic = response.backTopic()
         for (manager in eventManagerPool) {
+            val callTask = manager.loadObservable(backTopic)
+            callTask?.callback?.onResponse(callTask.request!!, response)
+
             val task = manager.popByTopic(backTopic)
             if (task != null) {
                 timeoutManager.removeEvent(task.id!!)

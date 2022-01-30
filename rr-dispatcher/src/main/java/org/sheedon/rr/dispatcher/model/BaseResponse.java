@@ -18,16 +18,20 @@ public class BaseResponse<BackTopic, Data> implements IResponse<BackTopic, Data>
     // 请求数据
     private Data body;
 
-
-
-    protected BaseResponse() {
+    public BaseResponse(BackTopic backTopic, Data body) {
+        this.backTopic = backTopic;
+        this.body = body;
     }
 
+    public BaseResponse(BackTopic backTopic, String message) {
+        this.backTopic = backTopic;
+        this.message = message;
+    }
 
-
-    protected <ResponseBuilder extends BaseResponseBuilder<BackTopic, Data>> BaseResponse(ResponseBuilder builder) {
-        this.backTopic = builder.backTopic();
-        this.body = builder.body();
+    public BaseResponse(BackTopic backTopic, String message, Data body) {
+        this.backTopic = backTopic;
+        this.message = message;
+        this.body = body;
     }
 
     @Override
@@ -55,12 +59,5 @@ public class BaseResponse<BackTopic, Data> implements IResponse<BackTopic, Data>
 
     public void setBody(Data body) {
         this.body = body;
-    }
-
-    public static <BackTopic, Data> IResponse<BackTopic, Data> build(BackTopic backTopic, String message) {
-        BaseResponse<BackTopic, Data> response = new BaseResponse<>();
-        response.backTopic = backTopic;
-        response.message = message;
-        return response;
     }
 }

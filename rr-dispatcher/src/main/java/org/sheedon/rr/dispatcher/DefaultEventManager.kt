@@ -24,7 +24,7 @@ class DefaultEventManager<BackTopic, RequestData, ResponseData> :
     private val topicDequePool: MutableMap<BackTopic, Deque<String>> = LinkedHashMap()
 
     // 监听反馈池
-    private val callbackPool: MutableMap<BackTopic, Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?> =
+    private val callbackPool: MutableMap<BackTopic, ReadyTask<BackTopic, String, RequestData, ResponseData>?> =
         ConcurrentHashMap()
 
     override fun push(
@@ -82,14 +82,14 @@ class DefaultEventManager<BackTopic, RequestData, ResponseData> :
     }
 
     override fun subscribe(
-        topic: BackTopic,
+        request: IRequest<BackTopic, RequestData>,
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ): Boolean {
-        callbackPool[topic] = callback
+        callbackPool[request.backTopic()] = build("", request, callback)
         return true
     }
 
-    override fun loadObservable(topic: BackTopic): Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>? {
+    override fun loadObservable(topic: BackTopic): ReadyTask<BackTopic, String, RequestData, ResponseData>? {
         return callbackPool[topic]
     }
 }

@@ -41,11 +41,11 @@ interface EventManager<BackTopic, ID, RequestData, ResponseData> {
     /**
      * 通过主题和反馈监听者，实现监听内容的绑定
      *
-     * @param topic    主题
+     * @param request  请求对象
      * @param callback 反馈监听者
      */
     fun subscribe(
-        topic: BackTopic,
+        request: IRequest<BackTopic, RequestData>,
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ): Boolean
 
@@ -55,5 +55,5 @@ interface EventManager<BackTopic, ID, RequestData, ResponseData> {
      * @param topic 反馈绑定主题
      * @return 反馈监听者
      */
-    fun loadObservable(topic: BackTopic): Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
+    fun loadObservable(topic: BackTopic): ReadyTask<BackTopic, String, RequestData, ResponseData>?
 }

@@ -18,15 +18,13 @@ public class Request extends BaseRequest<String, String> {
         super(builder);
     }
 
-    public static class RequestBuilder extends BaseRequestBuilder<String, String> {
+    public static class RequestBuilder extends BaseRequestBuilder<Request, String, String> {
 
         @Override
         protected boolean requireBackTopicNull(String backTopic) {
             return backTopic == null || backTopic.isEmpty();
         }
 
-
-        @SuppressWarnings("unchecked")
         @Override
         public Request build() {
             return new Request(this);

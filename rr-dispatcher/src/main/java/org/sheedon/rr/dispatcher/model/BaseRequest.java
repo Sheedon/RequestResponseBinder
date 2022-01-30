@@ -23,7 +23,8 @@ public class BaseRequest<BackTopic, Data> implements IRequest<BackTopic, Data> {
     // 请求数据
     private final Data body;
 
-    protected <RequestBuilder extends BaseRequestBuilder<BackTopic, Data>>
+    protected <Request extends BaseRequest<BackTopic, Data>,
+            RequestBuilder extends BaseRequestBuilder<Request, BackTopic, Data>>
     BaseRequest(RequestBuilder builder) {
         this.backTopic = builder.backTopic();
         this.delayMilliSecond = builder.delayMilliSecond();

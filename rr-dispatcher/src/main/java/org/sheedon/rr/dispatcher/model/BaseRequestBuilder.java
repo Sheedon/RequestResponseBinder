@@ -12,7 +12,8 @@ import java.util.Objects;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/8 3:16 下午
  */
-public abstract class BaseRequestBuilder<BackTopic, Data> implements IRequest<BackTopic, Data> {
+public abstract class BaseRequestBuilder<Request extends BaseRequest<BackTopic, Data>, BackTopic, Data>
+        implements IRequest<BackTopic, Data> {
 
     // 反馈绑定主题
     private BackTopic backTopic;
@@ -25,7 +26,7 @@ public abstract class BaseRequestBuilder<BackTopic, Data> implements IRequest<Ba
 
     }
 
-    public <Request extends BaseRequest<BackTopic, Data>> BaseRequestBuilder(Request request) {
+    public BaseRequestBuilder(Request request) {
         this.backTopic = request.backTopic();
         this.delayMilliSecond = request.delayMilliSecond();
         this.body = request.body();
@@ -52,7 +53,7 @@ public abstract class BaseRequestBuilder<BackTopic, Data> implements IRequest<Ba
      * @param backTopic 反馈名
      * @return Builder
      */
-    public BaseRequestBuilder<BackTopic, Data> backTopic(BackTopic backTopic) {
+    public BaseRequestBuilder<Request,BackTopic, Data> backTopic(BackTopic backTopic) {
         if (requireBackTopicNull(backTopic))
             return this;
 
@@ -74,7 +75,7 @@ public abstract class BaseRequestBuilder<BackTopic, Data> implements IRequest<Ba
      * @param delayMilliSecond 延迟时间（毫秒）
      * @return Builder
      */
-    public BaseRequestBuilder<BackTopic, Data> delayMilliSecond(int delayMilliSecond) {
+    public BaseRequestBuilder<Request,BackTopic, Data> delayMilliSecond(int delayMilliSecond) {
         this.delayMilliSecond = delayMilliSecond;
         return this;
     }
@@ -85,7 +86,7 @@ public abstract class BaseRequestBuilder<BackTopic, Data> implements IRequest<Ba
      * @param delaySecond 延迟时间（秒）
      * @return Builder
      */
-    public BaseRequestBuilder<BackTopic, Data> delaySecond(long delaySecond) {
+    public BaseRequestBuilder<Request,BackTopic, Data> delaySecond(long delaySecond) {
         this.delayMilliSecond = delaySecond * 1000;
         return this;
     }
@@ -96,14 +97,10 @@ public abstract class BaseRequestBuilder<BackTopic, Data> implements IRequest<Ba
      * @param body 消息内容
      * @return Builder
      */
-    public BaseRequestBuilder<BackTopic, Data> body(Data body) {
+    public BaseRequestBuilder<Request,BackTopic, Data> body(Data body) {
         this.body = Objects.requireNonNull(body, "requestBody == null");
         return this;
     }
 
-
-    @SuppressWarnings("unchecked")
-    public <Request extends BaseRequest<BackTopic, Data>> Request build() {
-        return (Request) new BaseRequest<>(this);
-    }
+    public abstract Request build();
 }

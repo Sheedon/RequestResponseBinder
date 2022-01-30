@@ -72,7 +72,7 @@ class RealCall<BackTopic, ID, RequestData, ResponseData>(
             }
             val isSuccess = adapter.publish(body)
             if (!isSuccess) {
-                val response: IResponse<BackTopic, ResponseData> = BaseResponse.build(
+                val response: IResponse<BackTopic, ResponseData> = BaseResponse(
                     originalRequest.backTopic(),
                     getResourceString(BASENAME, DISPATCHER_KEY)
                 )
