@@ -85,7 +85,7 @@ public class BinderClient extends AbstractClient<String /*反馈主题*/,
     }
 
 
-    public static class Builder extends AbstractClient.Builder<String, String, String, TestMessage> {
+    public static class Builder extends AbstractClient.Builder<BinderClient, String, String, String, TestMessage> {
         // 各种其他客户端的配置
         // 例如客户端需要配置监听内容，重连机制等等
 
@@ -123,7 +123,6 @@ public class BinderClient extends AbstractClient<String /*反馈主题*/,
          *
          * @return BinderClient
          */
-        @SuppressWarnings("unchecked")
         @Override
         protected BinderClient builder() {
             return new BinderClient(this);

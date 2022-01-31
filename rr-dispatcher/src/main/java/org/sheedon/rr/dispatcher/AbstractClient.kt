@@ -14,7 +14,7 @@ import java.util.*
  * @Date: 2022/1/9 10:35 上午
  */
 abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protected constructor(
-    builder: Builder<BackTopic, ID, RequestData, ResponseData>
+    builder: Builder<*,BackTopic, ID, RequestData, ResponseData>
 ) {
     @get:JvmName("dispatchManager")
     val dispatchManager: DispatchManager<BackTopic, RequestData, ResponseData> =
@@ -31,7 +31,8 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
         return RealObservable(this, request)
     }
 
-    abstract class Builder<BackTopic, ID, RequestData, ResponseData> {
+    abstract class Builder<Client : AbstractClient<BackTopic, ID, RequestData, ResponseData>,
+            BackTopic, ID, RequestData, ResponseData> {
         internal var dispatcher: DispatchManager<BackTopic, RequestData, ResponseData>? = null
         internal var timeout = 5
 
@@ -177,7 +178,7 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
             this.responseAdapter = responseAdapter
         }
 
-        fun <Client : AbstractClient<BackTopic, ID, RequestData, ResponseData>> build(): Client {
+        fun build(): Client {
             checkAndBind()
             buildDispatcher()
             return builder()
@@ -214,6 +215,6 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
             }
         }
 
-        protected abstract fun <Client : AbstractClient<BackTopic, ID, RequestData, ResponseData>> builder(): Client
+        protected abstract fun builder(): Client
     }
 }
