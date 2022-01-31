@@ -21,13 +21,12 @@ class RealCall<BackTopic, ID, RequestData, ResponseData>(
     // 是否执行取消操作
     @Volatile
     private var canceled = false
-    override var isCanceled: Boolean = canceled
+    override fun isCanceled() = canceled
+
+    override fun isExecuted() = executed.get()
 
     // 是否执行完成
     private val executed = AtomicBoolean()
-
-    override val isExecuted: Boolean
-        get() = executed.get()
 
     companion object {
         private const val BASENAME = "dispatcher"
@@ -50,7 +49,7 @@ class RealCall<BackTopic, ID, RequestData, ResponseData>(
     }
 
     override fun cancel() {
-        isCanceled = true
+        canceled = true
     }
 
     internal inner class AsyncCall(
@@ -59,7 +58,7 @@ class RealCall<BackTopic, ID, RequestData, ResponseData>(
         private val responseCallback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ) : NamedRunnable("AsyncCall %s", originalRequest) {
         override fun execute() {
-            if (isCanceled) {
+            if (isCanceled()) {
                 return
             }
             val isNeedCallback = responseCallback != null

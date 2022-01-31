@@ -50,6 +50,13 @@ interface EventManager<BackTopic, ID, RequestData, ResponseData> {
     ): Boolean
 
     /**
+     * 根据主题，取消订阅的绑定
+     *
+     * @param backTopic  反馈主题
+     */
+    fun unsubscribe(backTopic: BackTopic): Boolean
+
+    /**
      * 通过反馈绑定主题 加载 反馈监听者
      *
      * @param topic 反馈绑定主题

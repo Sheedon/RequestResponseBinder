@@ -16,8 +16,10 @@ class RealObservable<BackTopic, ID, RequestData, ResponseData>(
 ) : Observable<BackTopic, RequestData, ResponseData> {
 
     // 是否执行取消操作
-    override var isCanceled = false
-        private set
+    @Volatile
+    private var canceled = false
+
+    override fun isCanceled() = canceled
 
     override fun <RRCallback : Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>> subscribe(
         callback: RRCallback
@@ -27,6 +29,8 @@ class RealObservable<BackTopic, ID, RequestData, ResponseData>(
     }
 
     override fun cancel() {
-        isCanceled = true
+        canceled = true
+        val manager = client.dispatchManager
+        manager.removeObservable(originalRequest.backTopic())
     }
 }

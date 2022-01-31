@@ -20,7 +20,7 @@ interface Observable<BackTopic, RequestData, ResponseData> {
     /**
      * 消息是否取消
      */
-    val isCanceled: Boolean
+    fun isCanceled(): Boolean
 
     /**
      * 取消任务

@@ -68,6 +68,15 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
         }
     }
 
+    override fun removeObservable(backTopic: BackTopic) {
+        for (manager in eventManagerPool) {
+            val subscribed = manager.unsubscribe(backTopic)
+            if (subscribed) {
+                return
+            }
+        }
+    }
+
     /**
      * 执行响应反馈操作
      *

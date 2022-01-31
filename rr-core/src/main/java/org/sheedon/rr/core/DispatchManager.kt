@@ -40,6 +40,16 @@ interface DispatchManager<BackTopic, RequestData, ResponseData> {
     )
 
     /**
+     * 移除一个可观察信息，用于取消订阅某个主题的反馈信息的关联项
+     *
+     * @param request  请求数据
+     * @param callback 反馈监听器
+     */
+    fun removeObservable(
+        backTopic: BackTopic
+    )
+
+    /**
      * 反馈结果监听
      *
      * @param response 反馈结果

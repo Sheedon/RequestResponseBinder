@@ -89,7 +89,13 @@ class DefaultEventManager<BackTopic, RequestData, ResponseData> :
         return true
     }
 
+    override fun unsubscribe(backTopic: BackTopic): Boolean {
+        val remove = callbackPool.remove(backTopic)
+        return remove != null
+    }
+
     override fun loadObservable(topic: BackTopic): ReadyTask<BackTopic, String, RequestData, ResponseData>? {
         return callbackPool[topic]
     }
+
 }
