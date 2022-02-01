@@ -19,6 +19,7 @@ interface EventManager<BackTopic, ID, RequestData, ResponseData> {
     </T> */
     fun push(
         request: IRequest<BackTopic, RequestData>,
+        defaultDelayMilliSecond: Long,
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ): DelayEvent<ID>?
 

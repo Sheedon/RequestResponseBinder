@@ -20,9 +20,6 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
     val dispatchManager: DispatchManager<BackTopic, RequestData, ResponseData> =
         builder.dispatcher!!
 
-    @get:JvmName("timeout")
-    val timeout: Int = builder.timeout
-
     open fun newCall(request: IRequest<BackTopic, RequestData>): Call<BackTopic, RequestData, ResponseData> {
         return RealCall(this, request)
     }
@@ -34,7 +31,7 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
     abstract class Builder<Client : AbstractClient<BackTopic, ID, RequestData, ResponseData>,
             BackTopic, ID, RequestData, ResponseData> {
         internal var dispatcher: DispatchManager<BackTopic, RequestData, ResponseData>? = null
-        internal var timeout = 5
+        private var timeout = 5
 
         // 职责服务执行环境
         @JvmField
@@ -222,6 +219,7 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
         private fun buildDispatcher() {
             if (dispatcher == null) {
                 dispatcher = Dispatcher(
+                    timeout * 1000L,
                     behaviorServices, eventManagerPool,
                     timeoutManager!!, dispatchAdapter!!,
                     backTopicConverters, responseAdapter!!

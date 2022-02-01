@@ -15,6 +15,7 @@ import java.util.concurrent.TimeoutException
  * @Date: 2022/1/8 9:36 下午
  */
 class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
+    private val timeout: Long,
     private val behaviorServices: List<EventBehavior>,// 事件行为服务，将任务放入服务中去执行
     private val eventManagerPool: List<EventManager<BackTopic, ID, RequestData, ResponseData>>,// 事件管理者-事件池
     private val timeoutManager: TimeoutManager<ID>,// 请求超时管理者
@@ -48,7 +49,7 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ) {
         for (manager in eventManagerPool) {
-            val event = manager.push(request, callback)
+            val event = manager.push(request, timeout, callback)
             if (event != null) {
                 timeoutManager.addEvent(event)
                 return

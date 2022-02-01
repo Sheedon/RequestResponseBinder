@@ -29,10 +29,13 @@ class DefaultEventManager<BackTopic, RequestData, ResponseData> :
 
     override fun push(
         request: IRequest<BackTopic, RequestData>,
+        defaultDelayMilliSecond: Long,
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ): DelayEvent<String> {
         val id = UUID.randomUUID().toString()
-        val event = build(id, System.currentTimeMillis() + request.delayMilliSecond())
+        val delayMilliSecond: Long =
+            if (request.delayMilliSecond() < 0) defaultDelayMilliSecond else request.delayMilliSecond()
+        val event = build(id, System.currentTimeMillis() + delayMilliSecond)
         // 添加准备反馈任务集合
         readyPool[id] = build(id, request, callback)
         // 添加网络反馈集合
