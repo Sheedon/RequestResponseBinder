@@ -85,7 +85,7 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
     override fun callResponse(message: ResponseData) {
         enqueueResponse {
             backTopicConverters.forEach {
-                val backTopic: BackTopic = it.convert(message)
+                val backTopic: BackTopic? = it.convert(message)
                 backTopic?.run {
                     val response: IResponse<BackTopic, ResponseData> =
                         responseAdapter.buildResponse(this, message)
@@ -114,13 +114,13 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
         var sign = 0B00
         for (manager in eventManagerPool) {
             val callTask = manager.loadObservable(backTopic)
-            if (sign xor 1 == 0 && callTask != null) {
+            if (sign xor 1 != 0 && callTask != null) {
                 sign = sign or 1
                 callTask.callback?.onResponse(callTask.request!!, response)
             }
 
             val task = manager.popByTopic(backTopic)
-            if (sign xor 2 == 0 && task != null) {
+            if (sign xor 2 != 0 && task != null) {
                 sign = sign or 2
                 timeoutManager.removeEvent(task.id!!)
                 val request = task.request

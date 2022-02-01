@@ -8,5 +8,5 @@ package org.sheedon.rr.core
  * @Date: 2022/1/8 4:55 下午
  */
 interface DataConverter<F, T> {
-    fun convert(value: F): T
+    fun convert(value: F): T?
 }
