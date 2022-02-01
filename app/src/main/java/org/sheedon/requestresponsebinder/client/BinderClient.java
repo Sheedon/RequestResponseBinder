@@ -110,8 +110,8 @@ public class BinderClient extends AbstractClient<String /*反馈主题*/,
             if (dispatchAdapter == null) {
                 dispatchAdapter = new WrapperClient(baseUrl);
             }
-            if (backTopicConverter == null) {
-                backTopicConverter = new BackTopicDataConverter();
+            if (backTopicConverters.isEmpty()) {
+                backTopicConverters.add(new BackTopicDataConverter());
             }
             if (responseAdapter == null) {
                 responseAdapter = new TestResponseAdapter();

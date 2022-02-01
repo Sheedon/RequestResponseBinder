@@ -14,7 +14,7 @@ import java.util.*
  * @Date: 2022/1/9 10:35 上午
  */
 abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protected constructor(
-    builder: Builder<*,BackTopic, ID, RequestData, ResponseData>
+    builder: Builder<*, BackTopic, ID, RequestData, ResponseData>
 ) {
     @get:JvmName("dispatchManager")
     val dispatchManager: DispatchManager<BackTopic, RequestData, ResponseData> =
@@ -59,7 +59,8 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
 
         // 反馈主题转换器
         @JvmField
-        protected var backTopicConverter: DataConverter<ResponseData, BackTopic>? = null
+        protected var backTopicConverters: MutableList<DataConverter<ResponseData, BackTopic>> =
+            mutableListOf()
 
         // 反馈适配器
         @JvmField
@@ -164,9 +165,22 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
          * @param backTopicConverter 反馈主题转换器
          * @return Builder<BackTopic></BackTopic>, ID>
          */
-        fun backTopicConverter(backTopicConverter: DataConverter<ResponseData, BackTopic>) = apply {
-            this.backTopicConverter = backTopicConverter
-        }
+        fun backTopicConverters(backTopicConverters: MutableList<DataConverter<ResponseData, BackTopic>>) =
+            apply {
+                this.backTopicConverters = backTopicConverters
+            }
+
+
+        /**
+         * 设置反馈主题转换器
+         *
+         * @param backTopicConverter 反馈主题转换器
+         * @return Builder<BackTopic></BackTopic>, ID>
+         */
+        fun addBackTopicConverter(backTopicConverter: DataConverter<ResponseData, BackTopic>) =
+            apply {
+                this.backTopicConverters.add(backTopicConverter)
+            }
 
         /**
          * 设置响应调度适配者
@@ -197,7 +211,7 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
             if (dispatchAdapter == null) {
                 throw NullPointerException("please add dispatchAdapter()")
             }
-            if (backTopicConverter == null) {
+            if (backTopicConverters.isEmpty()) {
                 throw NullPointerException("please add backTopicConverter()")
             }
             if (responseAdapter == null) {
@@ -210,7 +224,7 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
                 dispatcher = Dispatcher(
                     behaviorServices, eventManagerPool,
                     timeoutManager!!, dispatchAdapter!!,
-                    backTopicConverter!!, responseAdapter!!
+                    backTopicConverters, responseAdapter!!
                 )
             }
         }

@@ -19,7 +19,7 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
     private val eventManagerPool: List<EventManager<BackTopic, ID, RequestData, ResponseData>>,// 事件管理者-事件池
     private val timeoutManager: TimeoutManager<ID>,// 请求超时管理者
     dispatchAdapter: DispatchAdapter<RequestData, ResponseData>,// 调度适配器（请求适配器+反馈监听器）
-    private val backTopicConverter: DataConverter<ResponseData, BackTopic>,// 反馈主题转换器
+    private val backTopicConverters: MutableList<DataConverter<ResponseData, BackTopic>>,// 反馈主题转换器
     private val responseAdapter: ResponseAdapter<BackTopic, ResponseData>// 结果适配器
 ) : DispatchManager<BackTopic, RequestData, ResponseData>, OnCallListener<ResponseData> {
 
@@ -84,10 +84,15 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
      */
     override fun callResponse(message: ResponseData) {
         enqueueResponse {
-            val backTopic: BackTopic = backTopicConverter.convert(message)
-            val response: IResponse<BackTopic, ResponseData> =
-                responseAdapter.buildResponse(backTopic, message)
-            onResponse(response)
+            backTopicConverters.forEach {
+                val backTopic: BackTopic = it.convert(message)
+                backTopic?.run {
+                    val response: IResponse<BackTopic, ResponseData> =
+                        responseAdapter.buildResponse(this, message)
+                    onResponse(response)
+                    return@enqueueResponse
+                }
+            }
         }
     }
 
