@@ -8,6 +8,9 @@ package org.sheedon.rr.core
  * @Date: 2022/1/8 5:10 下午
  */
 interface RequestAdapter<Data> {
+
+    fun bindSender(sender: IRequestSender)
+
     /**
      * 核实请求数据，并且将处理后的请求数据返回
      *
@@ -22,4 +25,15 @@ interface RequestAdapter<Data> {
      * @param data 请求数据
      */
     fun publish(data: Data): Boolean
+
+
+    abstract class AbstractRequestImpl<Data> :
+        RequestAdapter<Data> {
+        protected var sender: IRequestSender? = null
+
+        override fun bindSender(sender: IRequestSender) {
+            this.sender = sender
+        }
+
+    }
 }

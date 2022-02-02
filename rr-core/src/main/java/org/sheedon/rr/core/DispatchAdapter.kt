@@ -14,7 +14,23 @@ interface DispatchAdapter<RequestData, ResponseData> {
 
     fun bindCallListener(listener: OnCallListener<ResponseData>?)
 
+    fun callResponse(message: ResponseData)
+
     interface OnCallListener<ResponseData> {
         fun callResponse(message: ResponseData)
+    }
+
+    abstract class AbstractDispatchImpl<RequestData, ResponseData> :
+        DispatchAdapter<RequestData, ResponseData> {
+
+        private var listener: OnCallListener<ResponseData>? = null
+
+        override fun bindCallListener(listener: OnCallListener<ResponseData>?) {
+            this.listener = listener
+        }
+
+        override fun callResponse(message: ResponseData) {
+            this.listener?.callResponse(message)
+        }
     }
 }

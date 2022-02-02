@@ -1,11 +1,12 @@
 package org.sheedon.requestresponsebinder.client;
 
+import androidx.annotation.NonNull;
+
 import org.sheedon.requestresponsebinder.TestMessage;
 import org.sheedon.requestresponsebinder.datamanager.TestRealClient;
-import org.sheedon.requestresponsebinder.model.Response;
 import org.sheedon.rr.core.DispatchAdapter;
+import org.sheedon.rr.core.IRequestSender;
 import org.sheedon.rr.core.RequestAdapter;
-import org.sheedon.rr.core.ResponseAdapter;
 
 /**
  * java类作用描述
@@ -14,7 +15,7 @@ import org.sheedon.rr.core.ResponseAdapter;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/23 3:51 下午
  */
-public class WrapperClient implements DispatchAdapter<String, TestMessage> {
+public class WrapperClient extends DispatchAdapter.AbstractDispatchImpl<String, TestMessage> {
 
     private DispatchAdapter.OnCallListener<TestMessage> listener;
     private final String baseUrl;
@@ -28,24 +29,15 @@ public class WrapperClient implements DispatchAdapter<String, TestMessage> {
         this(requestAdapter.baseUrl);
     }
 
-    private void callResponse(TestMessage message) {
-        if (listener != null) {
-            listener.callResponse(message);
-        }
-    }
-
-
+    @NonNull
     @Override
     public RequestAdapter<String> loadRequestAdapter() {
-        return new TestRequestAdapter(baseUrl);
+        RequestAdapter<String> adapter = new TestRequestAdapter(baseUrl);
+        adapter.bindSender(TestRealClient.getInstance());
+        return adapter;
     }
 
-    @Override
-    public void bindCallListener(OnCallListener<TestMessage> listener) {
-        this.listener = listener;
-    }
-
-    public static class TestRequestAdapter implements RequestAdapter<String> {
+    public static class TestRequestAdapter extends RequestAdapter.AbstractRequestImpl<String> {
 
         private final String baseUrl;
 
@@ -67,7 +59,10 @@ public class WrapperClient implements DispatchAdapter<String, TestMessage> {
             if (message == null) {
                 return false;
             }
-            TestRealClient.getInstance().publish(message);
+            IRequestSender sender = getSender();
+            if (sender instanceof TestRealClient) {
+                ((TestRealClient) sender).publish(message);
+            }
             return true;
         }
     }

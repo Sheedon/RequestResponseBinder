@@ -1,6 +1,7 @@
 package org.sheedon.requestresponsebinder.datamanager;
 
 import org.sheedon.requestresponsebinder.TestMessage;
+import org.sheedon.rr.core.IRequestSender;
 
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
@@ -15,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/14 9:21 下午
  */
-public class TestRealClient {
+public class TestRealClient implements IRequestSender {
 
     private static final TestRealClient instance = new TestRealClient();
 
