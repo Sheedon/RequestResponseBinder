@@ -159,7 +159,7 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
         /**
          * 设置反馈主题转换器
          *
-         * @param backTopicConverter 反馈主题转换器
+         * @param backTopicConverters 反馈主题转换器
          * @return Builder<BackTopic></BackTopic>, ID>
          */
         fun backTopicConverters(backTopicConverters: MutableList<DataConverter<ResponseData, BackTopic>>) =
@@ -187,6 +187,16 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
          */
         fun responseAdapter(responseAdapter: ResponseAdapter<BackTopic, ResponseData>) = apply {
             this.responseAdapter = responseAdapter
+        }
+
+        /**
+         * 是否开启log
+         *
+         * @param open 是否开启log
+         * @return Builder<BackTopic></BackTopic>, ID>
+         */
+        fun openLog(open: Boolean) = apply {
+            log.showLog(open)
         }
 
         fun build(): Client {
