@@ -59,6 +59,10 @@ class RealCall<BackTopic, ID, RequestData, ResponseData>(
     ) : NamedRunnable("AsyncCall %s", originalRequest) {
         override fun execute() {
             if (isCanceled()) {
+                log.warning(
+                    "Dispatcher",
+                    "request is canceled by $originalRequest"
+                )
                 return
             }
             val isNeedCallback = responseCallback != null

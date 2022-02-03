@@ -29,6 +29,10 @@ class RealObservable<BackTopic, ID, RequestData, ResponseData>(
     }
 
     override fun cancel() {
+        log.info(
+            "Dispatcher",
+            "subscribe is cancel with $originalRequest"
+        )
         canceled = true
         val manager = client.dispatchManager
         manager.removeObservable(originalRequest.backTopic())

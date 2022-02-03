@@ -37,6 +37,7 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
     }
 
     override fun enqueueRequest(runnable: Runnable) {
+        log.info("Dispatcher", "enqueueRequest runnable")
         for (service in behaviorServices) {
             if (service.enqueueRequestEvent(runnable)) {
                 return
@@ -48,9 +49,11 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
         request: IRequest<BackTopic, RequestData>,
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ) {
+        log.info("Dispatcher", "addBinder request($request) and callback($callback)")
         for (manager in eventManagerPool) {
             val event = manager.push(request, timeout, callback)
             if (event != null) {
+                log.info("Dispatcher", "addBinder to addEvent success")
                 timeoutManager.addEvent(event)
                 return
             }
@@ -61,18 +64,22 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
         request: IRequest<BackTopic, RequestData>,
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ) {
+        log.info("Dispatcher", "addObservable request($request) and callback($callback)")
         for (manager in eventManagerPool) {
             val subscribed = manager.subscribe(request, callback)
             if (subscribed) {
+                log.info("Dispatcher", "addObservable to subscribe success")
                 return
             }
         }
     }
 
     override fun removeObservable(backTopic: BackTopic) {
+        log.info("Dispatcher", "removeObservable backTopic($backTopic)")
         for (manager in eventManagerPool) {
             val subscribed = manager.unsubscribe(backTopic)
             if (subscribed) {
+                log.info("Dispatcher", "removeObservable unsubscribe success")
                 return
             }
         }
@@ -87,9 +94,11 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
         enqueueResponse {
             backTopicConverters.forEach {
                 val backTopic: BackTopic? = it.convert(message)
+                log.info("Dispatcher", "callResponse backTopic($backTopic)")
                 backTopic?.run {
                     val response: IResponse<BackTopic, ResponseData> =
                         responseAdapter.buildResponse(this, message)
+                    log.info("Dispatcher", "callResponse response($response)")
                     onResponse(response)
                     return@enqueueResponse
                 }
@@ -103,6 +112,7 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
      * @param runnable 反馈的Runnable
      */
     private fun enqueueResponse(runnable: Runnable) {
+        log.info("Dispatcher", "enqueueResponse runnable")
         for (service in behaviorServices) {
             if (service.enqueueCallbackEvent(runnable)) {
                 return
@@ -116,12 +126,20 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
         for (manager in eventManagerPool) {
             val callTask = manager.loadObservable(backTopic)
             if (sign xor 1 != 0 && callTask != null) {
+                log.info(
+                    "Dispatcher",
+                    "onResponse observable by backTopic($backTopic), response is $response"
+                )
                 sign = sign or 1
                 callTask.callback?.onResponse(callTask.request!!, response)
             }
 
             val task = manager.popByTopic(backTopic)
             if (sign xor 2 != 0 && task != null) {
+                log.info(
+                    "Dispatcher",
+                    "onResponse call by backTopic($backTopic), response is $response"
+                )
                 sign = sign or 2
                 timeoutManager.removeEvent(task.id!!)
                 val request = task.request
@@ -142,6 +160,10 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
             for (manager in eventManagerPool) {
                 val task = manager.popById(id)
                 if (task != null) {
+                    log.info(
+                        "Dispatcher",
+                        "onTimeOut task($task)"
+                    )
                     timeoutManager.removeEvent(task.id!!)
                     val request = task.request
                     val callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>? =

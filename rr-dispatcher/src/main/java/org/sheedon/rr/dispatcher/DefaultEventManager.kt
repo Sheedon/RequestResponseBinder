@@ -32,6 +32,10 @@ class DefaultEventManager<BackTopic, RequestData, ResponseData> :
         defaultDelayMilliSecond: Long,
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ): DelayEvent<String> {
+        log.info(
+            "EventManager",
+            "Push one request，request的defaultDelayMilliSecond is $defaultDelayMilliSecond , callback is ${callback?.javaClass}"
+        )
         val id = UUID.randomUUID().toString()
         val delayMilliSecond: Long =
             if (request.delayMilliSecond() < 0) defaultDelayMilliSecond else request.delayMilliSecond()
@@ -51,6 +55,10 @@ class DefaultEventManager<BackTopic, RequestData, ResponseData> :
      * @return Deque<String>
     </String> */
     private fun getNetCallDeque(backTopic: BackTopic, id: String): Deque<String> {
+        log.info(
+            "EventManager",
+            "bind backTopic($backTopic) and id($id), callback id's deque"
+        )
         var callbacks = topicDequePool[backTopic]
         if (callbacks == null) {
             callbacks = ArrayDeque()
@@ -66,9 +74,16 @@ class DefaultEventManager<BackTopic, RequestData, ResponseData> :
      * @return Callback
      */
     override fun popByTopic(topic: BackTopic): ReadyTask<BackTopic, String, RequestData, ResponseData>? {
+        log.info(
+            "EventManager",
+            "pop readyTask by topic($topic), "
+        )
         synchronized(topicDequePool) {
             val deque = topicDequePool[topic]
-            if (deque == null || deque.size == 0) return null
+            if (deque == null || deque.size == 0) {
+                log.info("EventManager", "readyTask is null")
+                return null
+            }
             val id = deque.removeFirst()
             return popById(id)
         }
@@ -81,23 +96,28 @@ class DefaultEventManager<BackTopic, RequestData, ResponseData> :
      * @return Callback
      */
     override fun popById(id: String): ReadyTask<BackTopic, String, RequestData, ResponseData>? {
-        return readyPool.remove(id)
+        val readyTask = readyPool.remove(id)
+        log.info("EventManager", "readyTask is $readyTask")
+        return readyTask
     }
 
     override fun subscribe(
         request: IRequest<BackTopic, RequestData>,
         callback: Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?
     ): Boolean {
+        log.info("EventManager", "subscribe is $request")
         callbackPool[request.backTopic()] = build("", request, callback)
         return true
     }
 
     override fun unsubscribe(backTopic: BackTopic): Boolean {
+        log.info("EventManager", "unsubscribe by topic($backTopic)")
         val remove = callbackPool.remove(backTopic)
         return remove != null
     }
 
     override fun loadObservable(topic: BackTopic): ReadyTask<BackTopic, String, RequestData, ResponseData>? {
+        log.info("EventManager", "loadObservable by topic($topic)")
         return callbackPool[topic]
     }
 

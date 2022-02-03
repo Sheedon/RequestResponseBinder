@@ -24,6 +24,10 @@ class DefaultEventBehaviorService : EventBehavior {
      * @return 返回true，代表当前以被处理，无需其他事件执行者再去操作
      */
     override fun enqueueRequestEvent(requestRunnable: Runnable): Boolean {
+        log.info(
+            "EventBehavior",
+            "enqueue requestRunnable to RequestEvent by DefaultEventBehaviorService"
+        )
         publishService.execute(requestRunnable)
         return true
     }
@@ -35,6 +39,10 @@ class DefaultEventBehaviorService : EventBehavior {
      * @return 返回true，代表当前以被处理，无需其他事件执行者再去操作
      */
     override fun enqueueCallbackEvent(callbackRunnable: Runnable): Boolean {
+        log.info(
+            "EventBehavior",
+            "enqueue callbackRunnable to CallbackEvent by DefaultEventBehaviorService"
+        )
         callbackService.execute(callbackRunnable)
         return true
     }
