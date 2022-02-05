@@ -199,6 +199,16 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
             log.showLog(open)
         }
 
+        /**
+         * 是否开启显示堆栈跟踪
+         *
+         * @param open 是否显示堆栈跟踪
+         * @return Builder<BackTopic></BackTopic>, ID>
+         */
+        fun openStackTrace(open: Boolean) = apply {
+            log.showStackTrace(open)
+        }
+
         fun build(): Client {
             checkAndBind()
             buildDispatcher()
