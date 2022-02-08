@@ -31,7 +31,7 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
     abstract class Builder<Client : AbstractClient<BackTopic, ID, RequestData, ResponseData>,
             BackTopic, ID, RequestData, ResponseData> {
         internal var dispatcher: DispatchManager<BackTopic, RequestData, ResponseData>? = null
-        private var timeout = 5
+        var timeout = 5
 
         // 职责服务执行环境
         @JvmField

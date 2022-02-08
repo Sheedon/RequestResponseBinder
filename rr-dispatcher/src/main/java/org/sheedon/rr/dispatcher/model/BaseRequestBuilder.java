@@ -75,7 +75,7 @@ public abstract class BaseRequestBuilder<Request extends BaseRequest<BackTopic, 
      * @param delayMilliSecond 延迟时间（毫秒）
      * @return Builder
      */
-    public BaseRequestBuilder<Request,BackTopic, Data> delayMilliSecond(int delayMilliSecond) {
+    public BaseRequestBuilder<Request,BackTopic, Data> delayMilliSecond(long delayMilliSecond) {
         this.delayMilliSecond = delayMilliSecond;
         return this;
     }
@@ -86,8 +86,8 @@ public abstract class BaseRequestBuilder<Request extends BaseRequest<BackTopic, 
      * @param delaySecond 延迟时间（秒）
      * @return Builder
      */
-    public BaseRequestBuilder<Request,BackTopic, Data> delaySecond(long delaySecond) {
-        this.delayMilliSecond = delaySecond * 1000;
+    public BaseRequestBuilder<Request,BackTopic, Data> delaySecond(int delaySecond) {
+        this.delayMilliSecond = delaySecond * 1000L;
         return this;
     }
 
