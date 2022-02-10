@@ -18,6 +18,13 @@ interface Call<BackTopic, RequestData, ResponseData> {
     )
 
     /**
+     * 获取请求数据
+     *
+     * @return Request 请求信息
+     */
+    fun <Request : IRequest<BackTopic, RequestData>> request(): Request
+
+    /**
      * 请求提交，标志着这个请求无需监听反馈
      */
     fun publish()

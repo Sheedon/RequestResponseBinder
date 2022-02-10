@@ -42,6 +42,11 @@ class RealCall<BackTopic, ID, RequestData, ResponseData>(
         manager.enqueueRequest(AsyncCall(client, originalRequest, callback))
     }
 
+    @Suppress("UNCHECKED_CAST")
+    override fun <Request : IRequest<BackTopic, RequestData>> request(): Request {
+        return originalRequest as Request
+    }
+
     override fun publish() {
         this.enqueue<Callback<IRequest<BackTopic, RequestData>, IResponse<BackTopic, ResponseData>>?>(
             null

@@ -18,6 +18,13 @@ interface Observable<BackTopic, RequestData, ResponseData> {
     )
 
     /**
+     * 获取请求数据
+     *
+     * @return Request 请求信息
+     */
+    fun <Request : IRequest<BackTopic, RequestData>> request(): Request
+
+    /**
      * 消息是否取消
      */
     fun isCanceled(): Boolean

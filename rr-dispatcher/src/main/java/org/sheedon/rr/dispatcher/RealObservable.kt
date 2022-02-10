@@ -37,4 +37,9 @@ class RealObservable<BackTopic, ID, RequestData, ResponseData>(
         val manager = client.dispatchManager
         manager.removeObservable(originalRequest.backTopic())
     }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <Request : IRequest<BackTopic, RequestData>> request(): Request {
+        return originalRequest as Request
+    }
 }
