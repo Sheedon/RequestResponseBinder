@@ -7,12 +7,12 @@ import org.sheedon.rr.core.IRequest;
  * 除此之外，对于一个消息的超时限制，可以通过提供的超时时限来设定。
  * 其他则为实际请求数据
  *
- * <BackTopic>: 反馈主题类型
- * <Data>: 实际请求数据类型
+ * BackTopic: 反馈主题类型
+ * Data: 实际请求数据类型
  *
- * @Author: sheedon
- * @Email: sheedonsun@163.com
- * @Date: 2022/1/8 3:06 下午
+ * @author: sheedon
+ * email : sheedonsun@163.com
+ * data: 2022/1/8 3:06 下午
  */
 public class BaseRequest<BackTopic, Data> implements IRequest<BackTopic, Data> {
 
