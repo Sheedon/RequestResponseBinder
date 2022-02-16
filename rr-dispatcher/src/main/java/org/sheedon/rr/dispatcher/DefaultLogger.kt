@@ -1,8 +1,7 @@
 package org.sheedon.rr.dispatcher
 
+import android.util.Log
 import java.lang.StringBuilder
-import java.util.logging.Level
-import java.util.logging.Logger
 
 
 /**
@@ -11,18 +10,19 @@ import java.util.logging.Logger
  * @Email: sheedonsun@163.com
  * @Date: 2022/2/3 9:45 上午
  */
-class DefaultLogger private constructor() {
 
-    private val logger: Logger = Logger.getLogger(defaultTag)
+val log = DefaultLogger.INSTANCE
+
+class DefaultLogger private constructor() {
 
     companion object {
         private var defaultTag = "RR-Dispatcher"
         internal var isShowLog = false
         internal var isShowStackTrace = false
 
-        internal val DEBUG = Level.parse("DEBUG")
-
-        val log = DefaultLogger()
+        val INSTANCE: DefaultLogger by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
+            DefaultLogger()
+        }
     }
 
 
@@ -37,8 +37,8 @@ class DefaultLogger private constructor() {
     fun debug(tag: String?, message: String?) {
         if (isShowLog) {
             val stackTraceElement = Thread.currentThread().stackTrace[3]
-            logger.log(
-                DEBUG, if (tag.isNullOrEmpty()) getDefaultTag() else tag,
+            Log.d(
+                if (tag.isNullOrEmpty()) getDefaultTag() else tag,
                 message + getExtInfo(stackTraceElement)
             )
         }
@@ -47,9 +47,7 @@ class DefaultLogger private constructor() {
     fun info(tag: String?, message: String?) {
         if (isShowLog) {
             val stackTraceElement = Thread.currentThread().stackTrace[3]
-            logger.log(
-                Level.INFO,
-                if (tag.isNullOrEmpty()) getDefaultTag() else tag,
+            Log.i(if (tag.isNullOrEmpty()) getDefaultTag() else tag,
                 message + getExtInfo(stackTraceElement)
             )
         }
@@ -58,9 +56,7 @@ class DefaultLogger private constructor() {
     fun warning(tag: String?, message: String?) {
         if (isShowLog) {
             val stackTraceElement = Thread.currentThread().stackTrace[3]
-            logger.log(
-                Level.WARNING,
-                if (tag.isNullOrEmpty()) getDefaultTag() else tag,
+            Log.w(if (tag.isNullOrEmpty()) getDefaultTag() else tag,
                 message + getExtInfo(stackTraceElement)
             )
         }
@@ -92,5 +88,3 @@ class DefaultLogger private constructor() {
         return ""
     }
 }
-
-internal val log = DefaultLogger.log
