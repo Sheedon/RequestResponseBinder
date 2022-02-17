@@ -1,9 +1,10 @@
 package org.sheedon.requestresponsebinder.model;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.sheedon.requestresponsebinder.TestMessage;
-import org.sheedon.rr.dispatcher.model.BaseResponse;
+import org.sheedon.rr.core.IResponse;
 
 /**
  * 协议客户端中使用的响应对象
@@ -12,18 +13,26 @@ import org.sheedon.rr.dispatcher.model.BaseResponse;
  * @Email: sheedonsun@163.com
  * @Date: 2022/1/15 11:21 上午
  */
-public class Response extends BaseResponse<String, TestMessage> {
+public class Response implements IResponse<String, TestMessage> {
+
+    private final String topic;
+    private String message;
+    private TestMessage body;
 
     public Response(String topic, TestMessage body) {
-        super(topic, body);
+        this.topic = topic;
+        this.body = body;
     }
 
     public Response(String topic, String message) {
-        super(topic, message);
+        this.topic = topic;
+        this.message = message;
     }
 
     public Response(String topic, String message, TestMessage body) {
-        super(topic, message, body);
+        this.topic = topic;
+        this.message = message;
+        this.message = message;
     }
 
     public static Response build(TestMessage message) {
@@ -32,6 +41,22 @@ public class Response extends BaseResponse<String, TestMessage> {
 
     public static Response build(String backTopic, String message) {
         return new Response(backTopic,message);
+    }
+
+    @Override
+    public String backTopic() {
+        return topic;
+    }
+
+    @Nullable
+    @Override
+    public String message() {
+        return message;
+    }
+
+    @Override
+    public TestMessage body() {
+        return body;
     }
 
     @NonNull
@@ -43,5 +68,4 @@ public class Response extends BaseResponse<String, TestMessage> {
                 ", body=" + body() +
                 '}';
     }
-
 }

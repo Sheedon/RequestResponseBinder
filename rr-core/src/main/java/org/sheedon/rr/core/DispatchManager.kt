@@ -10,6 +10,8 @@ package org.sheedon.rr.core
 interface DispatchManager<BackTopic, RequestData, ResponseData> {
     fun requestAdapter(): RequestAdapter<RequestData>?
 
+    fun responseAdapter(): ResponseAdapter<BackTopic, ResponseData>
+
     /**
      * 将请求行为入队，按预定策略去执行请求动作
      *

@@ -2,7 +2,6 @@ package org.sheedon.rr.dispatcher
 
 import org.sheedon.rr.core.*
 import org.sheedon.rr.timeout.ResourceBundleUtils.getResourceString
-import org.sheedon.rr.dispatcher.model.BaseResponse
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -80,7 +79,9 @@ class RealCall<BackTopic, ID, RequestData, ResponseData>(
             }
             val isSuccess = adapter.publish(body)
             if (!isSuccess) {
-                val response: IResponse<BackTopic, ResponseData> = BaseResponse(
+                val responseAdapter = manager.responseAdapter()
+
+                val response: IResponse<BackTopic, ResponseData> = responseAdapter.buildFailure(
                     originalRequest.backTopic(),
                     getResourceString(BASENAME, DISPATCHER_KEY)
                 )

@@ -27,6 +27,14 @@ public class RealCallWrapper implements Call {
         return new RealCallWrapper(realCall);
     }
 
+    public <Request extends IRequest<String, String>> Request request(){
+        return realCall.request();
+    }
+
+    public RealCall<String, String, String, TestMessage> getRealCall() {
+        return realCall;
+    }
+
     @Override
     public <RRCallback extends Callback<IRequest<String, String>, IResponse<String, TestMessage>>>
     void enqueue(RRCallback callback) {

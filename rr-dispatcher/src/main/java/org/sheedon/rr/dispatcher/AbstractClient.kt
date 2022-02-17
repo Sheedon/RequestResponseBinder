@@ -242,8 +242,7 @@ abstract class AbstractClient<BackTopic, ID, RequestData, ResponseData> protecte
                     timeout * 1000L,
                     behaviorServices, eventManagerPool,
                     timeoutManager!!, dispatchAdapter!!,
-                    backTopicConverters, responseAdapter!!
-                )
+                    backTopicConverters, responseAdapter!!)
             }
         }
 

@@ -24,6 +24,12 @@ public class RealObserverWrapper implements Observable {
         this.observable = observable;
     }
 
+    public <Request extends IRequest<String, String>> Request request(){
+        return observable.request();
+    }
+
+
+
     public static Observable newRealObservable(BinderClient client, Request request) {
         RealObservable<String, String, String, TestMessage> realObservable = new RealObservable<>(client, request);
         return new RealObserverWrapper(realObservable);

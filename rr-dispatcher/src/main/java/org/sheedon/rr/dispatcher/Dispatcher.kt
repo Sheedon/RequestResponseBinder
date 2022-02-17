@@ -36,6 +36,10 @@ class Dispatcher<BackTopic, ID, RequestData, ResponseData>(
         return requestAdapter
     }
 
+    override fun responseAdapter(): ResponseAdapter<BackTopic, ResponseData> {
+        return responseAdapter
+    }
+
     override fun enqueueRequest(runnable: Runnable) {
         log.info("Dispatcher", "enqueueRequest runnable")
         for (service in behaviorServices) {
